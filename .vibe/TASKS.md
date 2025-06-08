@@ -4,6 +4,10 @@
 
 # COMPLETED TASKS
 
+## Auth Expanded POC - Codespaces integration
+- [x] Please update the docs and README to set the base url to the port and host exposed by Github codespaces on port 3000. Research your approach in the Github Codespaces documentation before you implement your task. 
+- [x] Add these steps to start_in_codespaces.sh, a shell script that automatically runs the appropriate commands.
+
 ## POC - Auth
 - [x] Install and configure Auth.js (NextAuth.js v5)
 - [x] Create login/register pages with email/password authentication

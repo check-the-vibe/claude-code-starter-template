@@ -16,3 +16,12 @@ NextAuth GitHub Provider, https://next-auth.js.org/providers/github
 Auth.js Discord Provider, https://authjs.dev/getting-started/providers/discord
 JWT Best Practices Next.js 15, https://www.wisp.blog/blog/best-practices-in-implementing-jwt-in-nextjs-15
 Next.js Session Management Guide, https://clerk.com/blog/complete-guide-session-management-nextjs
+GitHub Codespaces Port Forwarding Documentation, https://docs.github.com/en/codespaces/developing-in-a-codespace/forwarding-ports-in-your-codespace
+GitHub Codespaces Environment Variables Guide, https://docs.github.com/en/codespaces/developing-in-a-codespace/persisting-environment-variables-and-temporary-files
+GitHub Codespaces Port Forwarding Troubleshooting, https://docs.github.com/en/codespaces/troubleshooting/troubleshooting-port-forwarding-for-github-codespaces
+GitHub Codespaces Restricting Port Visibility, https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/restricting-the-visibility-of-forwarded-ports
+Next.js Auth.js Example Repository, https://github.com/nextauthjs/next-auth-example
+Auth.js GitHub Provider Configuration, https://authjs.dev/guides/configuring-github
+GitHub Codespaces OAuth Discussion, https://github.com/orgs/community/discussions/26423
+Next.js Codespaces Template, https://github.com/github/codespaces-nextjs
+Codespaces Port Forwarding Blog Guide, https://dev.to/github/share-your-locally-hosted-web-app-using-codespaces-276k
