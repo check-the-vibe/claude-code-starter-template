@@ -1,6 +1,6 @@
-# MyWebsite - Modern Next.js Site with Authentication
+# MyWebsite - Next.js Desktop & Web Application
 
-A modern, responsive website built with Next.js, React, and Tailwind CSS with full authentication support using Auth.js (NextAuth.js v5). This project demonstrates best practices in modern web development with secure authentication and GitHub Codespaces support.
+A modern, cross-platform application built with Next.js, React, and Tailwind CSS. Available as both a web application and desktop app using Electron. Features full authentication, responsive design, and GitHub Codespaces support.
 
 ## Features
 
@@ -25,6 +25,13 @@ A modern, responsive website built with Next.js, React, and Tailwind CSS with fu
 - 🔄 Session management with secure cookies
 - 📊 SQLite database with Prisma ORM
 
+### Desktop Application
+- 🖥️ Cross-platform Electron desktop app (Linux, macOS, Windows)
+- 🔒 Secure local authentication with JWT tokens
+- 💾 Local SQLite database in user data directory
+- 🔄 Hot reloading for efficient development
+- 📦 Production builds with electron-builder
+
 ### GitHub Codespaces Support
 - 🚀 Optimized for GitHub Codespaces development
 - 🌍 Automatic URL detection and configuration
@@ -35,17 +42,23 @@ A modern, responsive website built with Next.js, React, and Tailwind CSS with fu
 ## Project Structure
 
 ```
-src/
-├── app/                 # Next.js App Router pages
-│   ├── about/          # About page
-│   ├── contact/        # Contact page with form
-│   ├── globals.css     # Global styles
-│   ├── layout.js       # Root layout with navigation
-│   └── page.js         # Home page
-└── components/         # Reusable components
-    ├── Navigation.js   # Responsive navigation
-    ├── Footer.js       # Site footer
-    └── LoadingSpinner.js # Loading component
+├── electron/
+│   ├── main/           # Electron main process
+│   └── preload/        # Preload scripts for IPC
+├── src/
+│   ├── app/            # Next.js App Router pages
+│   │   ├── about/      # About page
+│   │   ├── contact/    # Contact page with form
+│   │   ├── dashboard/  # User dashboard
+│   │   ├── login/      # Authentication pages
+│   │   └── api/        # API routes
+│   ├── components/     # Reusable components
+│   └── lib/            # Utilities and configuration
+│       ├── auth.js     # Web authentication
+│       ├── electron-auth.js # Desktop authentication
+│       └── database.js # Database configuration
+├── prisma/             # Database schema and files
+└── package.json        # Scripts and Electron config
 ```
 
 ## Getting Started
@@ -92,6 +105,49 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) to view the site.
 
+### For Desktop Development (Electron)
+
+1. **Install dependencies**:
+```bash
+npm install
+```
+
+2. **Set up database**:
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+3. **Development with hot reloading**:
+```bash
+npm run electron:dev
+```
+This starts both Next.js and Electron with hot reloading enabled.
+
+4. **Alternative manual process**:
+```bash
+# Terminal 1: Start Next.js
+npm run dev
+
+# Terminal 2: Launch Electron (after Next.js is ready)
+npm run electron
+```
+
+### Building Desktop Apps
+
+#### Development Build
+```bash
+npm run electron:build
+```
+
+#### Platform-Specific Builds
+```bash
+npm run electron:build-linux    # Linux (AppImage, .deb)
+npm run electron:build-mac      # macOS (DMG)
+```
+
+Built applications will be in the `dist/` directory.
+
 ### Environment Configuration
 
 Required environment variables:
@@ -107,10 +163,25 @@ For detailed setup instructions, see:
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
+### Web Development
+- `npm run dev` - Start Next.js development server
+- `npm run build` - Build Next.js for production
+- `npm run start` - Start Next.js production server
 - `npm run lint` - Run ESLint
+
+### Desktop Development
+- `npm run electron` - Launch Electron (requires Next.js dev server)
+- `npm run electron:dev` - Start Next.js and Electron concurrently
+- `npm run electron:build` - Build Electron app for current platform
+- `npm run electron:build-linux` - Build Linux packages (AppImage, .deb)
+- `npm run electron:build-mac` - Build macOS package (DMG)
+
+### Documentation
+For detailed setup and development instructions, see:
+- [Electron Development Guide](.vibe/docs/ELECTRON_DEVELOPMENT_GUIDE.md)
+- [Authentication Setup Guide](.vibe/docs/AUTHENTICATION_SETUP_GUIDE.md)
+- [GitHub Codespaces Configuration Guide](.vibe/docs/GITHUB_CODESPACES_NEXTJS_AUTH_GUIDE.md)
+
 
 ## Learn More
 

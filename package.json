@@ -6,12 +6,19 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "electron": "cross-env NODE_ENV=development electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
+    "electron:build": "cross-env NODE_ENV=production ELECTRON=true next build && electron-builder",
+    "electron:build-linux": "cross-env NODE_ENV=production ELECTRON=true next build && electron-builder --linux",
+    "electron:build-mac": "cross-env NODE_ENV=production ELECTRON=true next build && electron-builder --mac",
+    "electron:dist": "npm run electron:build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",
     "@prisma/client": "^6.9.0",
     "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
     "next": "15.3.3",
     "next-auth": "^5.0.0-beta.28",
     "prisma": "^6.9.0",
@@ -21,8 +28,58 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^36.4.0",
+    "electron-builder": "^26.0.12",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "wait-on": "^8.0.3"
+  },
+  "main": "electron/main/main.js",
+  "homepage": "./",
+  "build": {
+    "appId": "com.yourcompany.nextjs-electron-app",
+    "productName": "Next.js Electron App",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "app/**/*",
+      "electron/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Utility"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    }
   }
 }
