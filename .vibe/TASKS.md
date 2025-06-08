@@ -1,6 +1,21 @@
 <!-- This document holds the tasks that have previously been completed, or need to be completed. Please ensure a consistent format for your tasks. Please add to this list when performing a task. You can also choose to add ideas for future work here, even if you are not intending to take those actions currently. -->
 
-# Next.js Website Development Tasks
+# ACTIVE TASKS
+
+# COMPLETED TASKS
+
+## POC - Auth
+- [x] Install and configure Auth.js (NextAuth.js v5)
+- [x] Create login/register pages with email/password authentication
+- [x] Set up Google and GitHub OAuth providers (configured, needs API keys)
+- [x] Implement route protection middleware
+- [x] Create user profile and dashboard pages
+- [x] Document the steps to get up and running with this method
+- [x] Devise a test plan for running through this method, document your approach
+
+## Authentication Research
+- [x] Research methods for adding auth to a website, specifically those tailored or recommended for NextJS and React. Document your findings
+- [x] Choose a method based on your research, document your approach
 
 ## Setup & Configuration
 - [x] Initialize Next.js project with create-next-app
