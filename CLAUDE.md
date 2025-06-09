@@ -11,6 +11,9 @@ Focus on project root when performing your actions. The following files are mean
 - .vibe/PERSONA.md
 - .vibe/LINKS.csv
 - .vibe/LOG.txt
+- .vibe/ENVIRONMENT.md
+
+Read through .vibe/ENVIRONMENT.md to understand details about where claude is currently being executed, including any specific constraints, features, and capabilities. You may need to refer to documentation in .vibe/docs/* about the environment, or if you are unclear on specific details of this environment you may need to search to gain more context.
 
 Assume the role that is defined in .vibe/PERSONA.md. This will define how you should respond to requests. Use this persona throughout the rest of your tasks. 
 
