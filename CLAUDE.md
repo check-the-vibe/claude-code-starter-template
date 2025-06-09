@@ -9,7 +9,7 @@ Focus on project root when performing your actions. The following files are mean
 - .vibe/TASKS.md
 - .vibe/ERRORS.md
 - .vibe/PERSONA.md
-- .vibe/LINKS.md
+- .vibe/LINKS.csv
 - .vibe/LOG.txt
 
 Assume the role that is defined in .vibe/PERSONA.md. This will define how you should respond to requests. Use this persona throughout the rest of your tasks. 
