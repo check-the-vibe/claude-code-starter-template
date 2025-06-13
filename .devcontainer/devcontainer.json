@@ -1,0 +1,29 @@
+{
+  "name": "Vibestack DevContainer",
+  "image": "ghcr.io/check-the-vibe/vibestack:0.0.1",
+  "runArgs": [
+    "--init"
+  ],
+  "overrideCommand": false,
+  "remoteEnv": {
+    "VIBE_PASSWORD": "coding"
+  },
+  "forwardPorts": [80],
+  "portsAttributes": {
+    "80": {
+      "label": "Web Server",
+      "onAutoForward": "openPreview",
+      "requireLocalPort": false,
+      "protocol": "http"
+    }
+  },
+  "postStartCommand": "supervisorctl status || true",
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": []
+    }
+  },
+  "remoteUser": "root",
+  "workspaceFolder": "/home/vibe"
+}
