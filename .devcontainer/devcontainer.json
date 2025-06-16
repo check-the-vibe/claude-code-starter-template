@@ -15,13 +15,12 @@
       "protocol": "http"
     }
   },
-  "postStartCommand": "supervisorctl status || true",
+  "postStartCommand": "sudo supervisorctl status",
   "customizations": {
     "vscode": {
       "settings": {},
       "extensions": []
     }
   },
-  "remoteUser": "vibe",
-  "workspaceFolder": "/workspaces/vibestack"
+  "remoteUser": "vibe"
 }
