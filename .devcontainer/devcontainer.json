@@ -1,10 +1,8 @@
 {
   "name": "Vibestack DevContainer",
-  "image": "ghcr.io/check-the-vibe/vibestack:0.0.1",
-  "runArgs": [
-    "--init"
-  ],
+  "image": "ghcr.io/check-the-vibe/vibestack:latest",
   "overrideCommand": false,
+  "init" : true,
   "remoteEnv": {
     "VIBE_PASSWORD": "coding"
   },
@@ -24,6 +22,6 @@
       "extensions": []
     }
   },
-  "remoteUser": "root",
-  "workspaceFolder": "/home/vibe"
+  "remoteUser": "vibe",
+  "workspaceFolder": "/workspaces/vibestack"
 }
