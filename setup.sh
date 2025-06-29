@@ -15,9 +15,16 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Script configuration
-SCRIPT_VERSION="2.0.0"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TEMPLATES_DIR="${SCRIPT_DIR}/templates"
+SCRIPT_VERSION="2.1.0"
+# Determine script directory, handling both normal execution and curl-to-bash
+if [[ -n "${BASH_SOURCE[0]:-}" ]] && [[ "${BASH_SOURCE[0]}" != "/dev/stdin" ]] && [[ -e "${BASH_SOURCE[0]}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    TEMPLATES_DIR="${SCRIPT_DIR}/templates"
+else
+    # Running via curl-to-bash, templates will be downloaded
+    SCRIPT_DIR=""
+    TEMPLATES_DIR=""
+fi
 VIBE_DIR=".vibe"
 CLAUDE_FILE="CLAUDE.md"
 
@@ -103,6 +110,12 @@ create_file() {
 confirm() {
     local prompt=$1
     local default=${2:-N}
+    
+    # Skip in non-interactive mode
+    if [[ "${skip_interactive:-false}" == "true" ]]; then
+        [[ "$default" =~ ^[Yy]$ ]]
+        return $?
+    fi
     
     if [[ $default == "Y" ]]; then
         prompt="$prompt [Y/n]: "
@@ -620,33 +633,53 @@ EOF
     fi
 }
 
+# Global variable for non-interactive mode
+skip_interactive=false
+
 # Main setup function
 main() {
     print_header "Claude Code Starter Template Setup v$SCRIPT_VERSION"
+    
+    # Parse command line arguments first
+    local template_override=""
+    
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --template)
+                template_override="$2"
+                shift 2
+                ;;
+            --save-template)
+                if [[ ! -d "$VIBE_DIR" ]]; then
+                    print_color "$RED" "Error: No .vibe directory found to save as template"
+                    exit 1
+                fi
+                save_as_template "${2:-}"
+                exit 0
+                ;;
+            --non-interactive)
+                skip_interactive=true
+                shift
+                ;;
+            --help|-h)
+                print_color "$CYAN" "Usage: $0 [OPTIONS]"
+                print_color "$CYAN" "Options:"
+                print_color "$CYAN" "  --template NAME         Use specific template (bypasses selection)"
+                print_color "$CYAN" "  --save-template [name]  Save current .vibe as a template"
+                print_color "$CYAN" "  --non-interactive      Skip all prompts (use defaults)"
+                print_color "$CYAN" "  --help, -h             Show this help message"
+                exit 0
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
     
     # Check if running via curl and download templates
     if is_curl_bash; then
         download_templates
     fi
-    
-    # Parse command line arguments
-    case "${1:-}" in
-        --save-template)
-            if [[ ! -d "$VIBE_DIR" ]]; then
-                print_color "$RED" "Error: No .vibe directory found to save as template"
-                exit 1
-            fi
-            save_as_template "${2:-}"
-            exit 0
-            ;;
-        --help|-h)
-            print_color "$CYAN" "Usage: $0 [OPTIONS]"
-            print_color "$CYAN" "Options:"
-            print_color "$CYAN" "  --save-template [name]  Save current .vibe as a template"
-            print_color "$CYAN" "  --help, -h             Show this help message"
-            exit 0
-            ;;
-    esac
     
     # Setup git
     setup_git
@@ -655,14 +688,34 @@ main() {
     check_existing_vibe
     
     # Get available templates
-    local templates_array=($(list_templates))
+    local templates_str=$(list_templates)
+    local templates_array=($templates_str)
     
     # Select template
     local selected_template=""
-    if [[ ${#templates_array[@]} -gt 1 ]]; then
+    if [[ -n "$template_override" ]]; then
+        # Check if override template exists
+        local found=false
+        for t in "${templates_array[@]}"; do
+            if [[ "$t" == "$template_override" ]]; then
+                found=true
+                break
+            fi
+        done
+        if [[ "$found" == "true" ]] || [[ "$template_override" == "default" ]]; then
+            selected_template="$template_override"
+            print_color "$BLUE" "Using template: $selected_template"
+        else
+            print_color "$YELLOW" "Template '$template_override' not found. Using default."
+            selected_template="default"
+        fi
+    elif [[ ${#templates_array[@]} -gt 1 ]] && [[ "$skip_interactive" != "true" ]]; then
         selected_template=$(select_template "${templates_array[*]}")
     else
         selected_template="${templates_array[0]:-default}"
+        if [[ "$selected_template" != "default" ]]; then
+            print_color "$BLUE" "Using template: $selected_template"
+        fi
     fi
     
     print_header "Creating Directory Structure"
@@ -709,7 +762,7 @@ main() {
     echo "     ./setup.sh --save-template my-template"
     
     # Prompt for git operations
-    if check_git_repo && confirm "Would you like to create an initial commit?" "Y"; then
+    if check_git_repo && [[ "$skip_interactive" != "true" ]] && confirm "Would you like to create an initial commit?" "Y"; then
         git add .
         git commit -m "feat: Initialize Claude Code starter template
 
