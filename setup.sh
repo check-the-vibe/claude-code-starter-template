@@ -172,8 +172,9 @@ search_templates() {
     if [[ -z "$search_term" ]]; then
         filtered_templates=("${templates[@]}")
     else
+        # Use grep for case-insensitive matching (more portable)
         for template in "${templates[@]}"; do
-            if [[ "${template,,}" == *"${search_term,,}"* ]]; then
+            if echo "$template" | grep -qi "$search_term"; then
                 filtered_templates+=("$template")
             fi
         done
