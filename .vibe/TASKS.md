@@ -1,7 +1,9 @@
 # Project Tasks
 
 ## Current Sprint
-Fix setup.sh template system bugs and improve curl-to-bash functionality
+Add a basic search, keep a list of all templates in the setup scripts, allow the user to autocomplete a search based on the name of each folder available in templates/. 
+
+
 
 ### 🐛 Bug Fixes Needed
 - [x] Fix template listing when script is run from subdirectories (SCRIPT_DIR issue)

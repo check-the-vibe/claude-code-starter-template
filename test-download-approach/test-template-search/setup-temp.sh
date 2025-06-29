@@ -32,13 +32,6 @@ CLAUDE_FILE="CLAUDE.md"
 GITHUB_REPO="check-the-vibe/claude-code-starter-template"
 GITHUB_RAW_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/main"
 
-# Predefined list of available templates
-AVAILABLE_TEMPLATES=(
-    "default"
-    "nodejs-react"
-    "python-project"
-)
-
 # Function to print colored output
 print_color() {
     local color=$1
@@ -67,17 +60,20 @@ download_templates() {
     local temp_dir=$(mktemp -d)
     cd "$temp_dir"
     
-    # Download templates using predefined list
+    # Download templates using GitHub API
     if command -v curl &> /dev/null; then
-        # Use predefined list of templates
-        for template in "${AVAILABLE_TEMPLATES[@]}"; do
-            print_color "$CYAN" "  Downloading template: $template"
-            mkdir -p "templates/$template"
-            
-            # Download template files
-            curl -sL "${GITHUB_RAW_URL}/templates/${template}/TEMPLATE.md" -o "templates/${template}/TEMPLATE.md" 2>/dev/null || true
-            curl -sL "${GITHUB_RAW_URL}/templates/${template}/.vibe.tar.gz" -o "templates/${template}/.vibe.tar.gz" 2>/dev/null || true
-            curl -sL "${GITHUB_RAW_URL}/templates/${template}/CLAUDE.md" -o "templates/${template}/CLAUDE.md" 2>/dev/null || true
+        # Get list of templates
+        curl -sL "https://api.github.com/repos/${GITHUB_REPO}/contents/templates" | \
+        grep '"name"' | cut -d'"' -f4 | while read template; do
+            if [[ -n "$template" ]]; then
+                print_color "$CYAN" "  Downloading template: $template"
+                mkdir -p "templates/$template"
+                
+                # Download template files
+                curl -sL "${GITHUB_RAW_URL}/templates/${template}/TEMPLATE.md" -o "templates/${template}/TEMPLATE.md" 2>/dev/null || true
+                curl -sL "${GITHUB_RAW_URL}/templates/${template}/.vibe.tar.gz" -o "templates/${template}/.vibe.tar.gz" 2>/dev/null || true
+                curl -sL "${GITHUB_RAW_URL}/templates/${template}/CLAUDE.md" -o "templates/${template}/CLAUDE.md" 2>/dev/null || true
+            fi
         done
     else
         print_color "$RED" "Error: curl is required for downloading templates"
@@ -155,56 +151,10 @@ list_templates() {
     return 0
 }
 
-# Function to search templates with autocomplete
-search_templates() {
-    local templates=($1)
-    local search_term=""
-    local filtered_templates=()
-    
-    print_header "Search Templates"
-    print_color "$BLUE" "Type to search templates (press Enter to see all):"
-    echo
-    
-    # Read search term
-    read -p "Search: " search_term
-    
-    # Filter templates based on search term
-    if [[ -z "$search_term" ]]; then
-        filtered_templates=("${templates[@]}")
-    else
-        for template in "${templates[@]}"; do
-            if [[ "$template" == *"$search_term"* ]]; then
-                filtered_templates+=("$template")
-            fi
-        done
-    fi
-    
-    # Return filtered list
-    echo "${filtered_templates[@]}"
-}
-
 # Function to display template selection menu
 select_template() {
     local templates=($1)
     local selected=""
-    local use_search=true
-    
-    # If only one template, select it automatically
-    if [[ ${#templates[@]} -eq 1 ]]; then
-        echo "${templates[0]}"
-        return
-    fi
-    
-    # Ask if user wants to search
-    if [[ ${#templates[@]} -gt 5 ]]; then
-        print_color "$CYAN" "Found ${#templates[@]} templates."
-        if confirm "Would you like to search templates?" "Y"; then
-            local filtered=$(search_templates "${templates[*]}")
-            if [[ -n "$filtered" ]]; then
-                templates=($filtered)
-            fi
-        fi
-    fi
     
     print_header "Select a Template"
     
@@ -225,16 +175,9 @@ select_template() {
     
     # Get user selection
     while true; do
-        read -p "Select template (1-${#templates[@]}) or 's' to search again: " choice
+        read -p "Select template (1-${#templates[@]}): " choice
         
-        if [[ "$choice" == "s" || "$choice" == "S" ]]; then
-            # Search again
-            local filtered=$(search_templates "${templates[*]}")
-            if [[ -n "$filtered" ]]; then
-                select_template "$filtered"
-                return
-            fi
-        elif [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#templates[@]} )); then
+        if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#templates[@]} )); then
             selected="${templates[$((choice-1))]}"
             break
         else
@@ -718,31 +661,12 @@ main() {
                 skip_interactive=true
                 shift
                 ;;
-            --list-templates)
-                print_header "Available Templates"
-                if is_curl_bash; then
-                    # Show predefined list when running via curl
-                    for template in "${AVAILABLE_TEMPLATES[@]}"; do
-                        print_color "$CYAN" "  - $template"
-                    done
-                else
-                    # Show actual templates from directory
-                    local temps=$(list_templates)
-                    if [[ -n "$temps" ]]; then
-                        for template in $temps; do
-                            print_color "$CYAN" "  - $template"
-                        done
-                    fi
-                fi
-                exit 0
-                ;;
             --help|-h)
                 print_color "$CYAN" "Usage: $0 [OPTIONS]"
                 print_color "$CYAN" "Options:"
                 print_color "$CYAN" "  --template NAME         Use specific template (bypasses selection)"
                 print_color "$CYAN" "  --save-template [name]  Save current .vibe as a template"
                 print_color "$CYAN" "  --non-interactive      Skip all prompts (use defaults)"
-                print_color "$CYAN" "  --list-templates       List available templates"
                 print_color "$CYAN" "  --help, -h             Show this help message"
                 exit 0
                 ;;
