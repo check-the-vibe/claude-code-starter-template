@@ -162,18 +162,18 @@ search_templates() {
     local filtered_templates=()
     
     print_header "Search Templates"
-    print_color "$BLUE" "Type to search templates (press Enter to see all):"
+    print_color "$BLUE" "Enter a search term to filter templates, or press Enter to see all:"
     echo
     
     # Read search term
     read -p "Search: " search_term
     
-    # Filter templates based on search term
+    # Filter templates based on search term (case-insensitive)
     if [[ -z "$search_term" ]]; then
         filtered_templates=("${templates[@]}")
     else
         for template in "${templates[@]}"; do
-            if [[ "$template" == *"$search_term"* ]]; then
+            if [[ "${template,,}" == *"${search_term,,}"* ]]; then
                 filtered_templates+=("$template")
             fi
         done
@@ -187,7 +187,7 @@ search_templates() {
 select_template() {
     local templates=($1)
     local selected=""
-    local use_search=true
+    local filtered_templates=()
     
     # If only one template, select it automatically
     if [[ ${#templates[@]} -eq 1 ]]; then
@@ -195,51 +195,67 @@ select_template() {
         return
     fi
     
-    # Ask if user wants to search
-    if [[ ${#templates[@]} -gt 5 ]]; then
-        print_color "$CYAN" "Found ${#templates[@]} templates."
-        if confirm "Would you like to search templates?" "Y"; then
-            local filtered=$(search_templates "${templates[*]}")
-            if [[ -n "$filtered" ]]; then
-                templates=($filtered)
-            fi
-        fi
-    fi
+    print_color "$CYAN" "Found ${#templates[@]} templates available."
+    echo
     
-    print_header "Select a Template"
-    
-    # Display templates with descriptions
-    for i in "${!templates[@]}"; do
-        local template="${templates[$i]}"
-        local desc="Default template"
-        
-        # Read description from TEMPLATE.md if it exists
-        if [[ -f "$TEMPLATES_DIR/$template/TEMPLATE.md" ]]; then
-            desc=$(head -n 3 "$TEMPLATES_DIR/$template/TEMPLATE.md" 2>/dev/null | grep -E "^#|Description:" | sed 's/^#\s*//' | sed 's/Description:\s*//' | head -n 1) || desc="No description"
-        fi
-        
-        print_color "$CYAN" "  $((i+1)). $template"
-        print_color "$BLUE" "      $desc"
-        echo
-    done
-    
-    # Get user selection
+    # Search interface is now the primary method
     while true; do
-        read -p "Select template (1-${#templates[@]}) or 's' to search again: " choice
+        # Get filtered templates from search
+        local filtered=$(search_templates "${templates[*]}")
+        filtered_templates=($filtered)
+        
+        # Check if any templates match
+        if [[ ${#filtered_templates[@]} -eq 0 ]]; then
+            print_color "$RED" "No templates found matching your search."
+            if ! confirm "Would you like to search again?" "Y"; then
+                print_color "$RED" "✗ Template selection cancelled"
+                exit 1
+            fi
+            continue
+        fi
+        
+        # If only one template matches, select it automatically
+        if [[ ${#filtered_templates[@]} -eq 1 ]]; then
+            selected="${filtered_templates[0]}"
+            print_color "$GREEN" "✓ Selected template: $selected"
+            break
+        fi
+        
+        # Show filtered templates
+        print_header "Available Templates"
+        
+        for template in "${filtered_templates[@]}"; do
+            local desc="Default template"
+            
+            # Read description from TEMPLATE.md if it exists
+            if [[ -f "$TEMPLATES_DIR/$template/TEMPLATE.md" ]]; then
+                desc=$(head -n 3 "$TEMPLATES_DIR/$template/TEMPLATE.md" 2>/dev/null | grep -E "^#|Description:" | sed 's/^#\s*//' | sed 's/Description:\s*//' | head -n 1) || desc="No description"
+            fi
+            
+            print_color "$CYAN" "• $template"
+            print_color "$BLUE" "  $desc"
+            echo
+        done
+        
+        # Ask user to select by name
+        print_color "$YELLOW" "Type the exact template name to select it, or 's' to search again:"
+        read -p "> " choice
         
         if [[ "$choice" == "s" || "$choice" == "S" ]]; then
             # Search again
-            local filtered=$(search_templates "${templates[*]}")
-            if [[ -n "$filtered" ]]; then
-                select_template "$filtered"
-                return
-            fi
-        elif [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#templates[@]} )); then
-            selected="${templates[$((choice-1))]}"
-            break
-        else
-            print_color "$RED" "Invalid selection. Please try again."
+            continue
         fi
+        
+        # Check if the choice matches one of the filtered templates
+        for template in "${filtered_templates[@]}"; do
+            if [[ "$template" == "$choice" ]]; then
+                selected="$template"
+                break 2
+            fi
+        done
+        
+        # If no exact match, show error
+        print_color "$RED" "Invalid selection. Please type the exact template name or 's' to search again."
     done
     
     echo "$selected"
