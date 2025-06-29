@@ -251,12 +251,12 @@ _Future tasks and ideas_" "TASKS.md"
 _No errors recorded yet. Errors will be logged here with timestamps and context._
 
 ## Error Format Example:
-```
+\`\`\`
 [2024-01-01 10:30:00] Error Type: Build Failed
 Description: npm build failed with exit code 1
 Context: Attempting to build the project after adding new dependencies
 Solution: [Document the solution once resolved]
-```" "ERRORS.md"
+\`\`\`" "ERRORS.md"
     
     # Create LINKS.csv with more resources
     create_file "$VIBE_DIR/LINKS.csv" "title,url
