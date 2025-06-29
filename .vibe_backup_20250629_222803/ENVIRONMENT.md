@@ -1,1 +1,0 @@
-<!-- This file gives any specific information about the environment that claude is running in, including any specific details about how code is executed, where a user is accessing this project, and whether there are any specific constraints (no write access, e.g). If the user is running in a known platform environment (e.g. Github Codespaces, Replit) this will be called out -->
