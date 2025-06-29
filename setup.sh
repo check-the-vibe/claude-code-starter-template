@@ -49,7 +49,7 @@ print_header() {
 
 # Function to check if running via curl
 is_curl_bash() {
-    [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "${BASH_SOURCE[0]}" == "/dev/stdin" ]] || [[ -z "${BASH_SOURCE[0]}" ]]
+    [[ "${BASH_SOURCE[0]:-}" != "${0}" ]] || [[ "${BASH_SOURCE[0]:-}" == "/dev/stdin" ]] || [[ -z "${BASH_SOURCE[0]:-}" ]]
 }
 
 # Function to download templates if running via curl
