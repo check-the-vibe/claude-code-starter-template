@@ -79,9 +79,19 @@ check_existing_vibe() {
         print_color "$YELLOW" "⚠️  Warning: $VIBE_DIR directory already exists!"
         
         if confirm "Do you want to backup the existing directory?"; then
-            local backup_name="${VIBE_DIR}_backup_$(date +%Y%m%d_%H%M%S)"
-            mv "$VIBE_DIR" "$backup_name"
-            print_color "$GREEN" "✓ Backed up to: $backup_name"
+            # Create backups directory if it doesn't exist
+            mkdir -p "${VIBE_DIR}/backups"
+            
+            local backup_name="backups/backup_$(date +%Y%m%d_%H%M%S)"
+            local backup_path="${VIBE_DIR}/${backup_name}"
+            
+            # Create the specific backup directory
+            mkdir -p "$backup_path"
+            
+            # Copy all files except the backups directory itself
+            find "$VIBE_DIR" -maxdepth 1 -mindepth 1 ! -name 'backups' -exec cp -r {} "$backup_path/" \;
+            
+            print_color "$GREEN" "✓ Backed up to: $backup_path"
         elif ! confirm "Do you want to overwrite the existing directory?" "N"; then
             print_color "$RED" "✗ Setup cancelled by user"
             exit 1
@@ -138,8 +148,17 @@ __pycache__/
 dist/
 build/
 out/
+
+# Claude Code backups
+.vibe/backups/
 EOF
                 print_color "$GREEN" "✓ Created .gitignore"
+            else
+                # Ensure .vibe/backups/ is in gitignore even if file exists
+                if ! grep -q "^\.vibe/backups/" .gitignore 2>/dev/null; then
+                    echo -e "\n# Claude Code backups\n.vibe/backups/" >> .gitignore
+                    print_color "$GREEN" "✓ Added .vibe/backups/ to .gitignore"
+                fi
             fi
         fi
     fi
@@ -152,6 +171,14 @@ EOF
     # Create directory structure
     mkdir -p "$VIBE_DIR/docs"
     print_color "$GREEN" "✓ Created directory structure"
+    
+    # Ensure .vibe/backups/ is in gitignore if git repo exists
+    if check_git_repo && [[ -f .gitignore ]]; then
+        if ! grep -q "^\.vibe/backups/" .gitignore 2>/dev/null; then
+            echo -e "\n# Claude Code backups\n.vibe/backups/" >> .gitignore
+            print_color "$GREEN" "✓ Added .vibe/backups/ to .gitignore"
+        fi
+    fi
     
     print_header "Creating Configuration Files"
     
