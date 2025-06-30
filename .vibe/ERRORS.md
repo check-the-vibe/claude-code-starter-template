@@ -2,12 +2,9 @@
 
 # Error Log
 
-_No errors recorded yet. Errors will be logged here with timestamps and context._
+## Fixed Errors
 
-## Error Format Example:
-```
-[2024-01-01 10:30:00] Error Type: Build Failed
-Description: npm build failed with exit code 1
-Context: Attempting to build the project after adding new dependencies
-Solution: [Document the solution once resolved]
-```
+### BASH_SOURCE[0] unbound variable (FIXED)
+- **Issue**: When running the setup script via curl pipe, BASH_SOURCE[0] was undefined
+- **Solution**: Added detection for remote vs local execution and handled both cases properly
+- **Date Fixed**: 2025-06-30

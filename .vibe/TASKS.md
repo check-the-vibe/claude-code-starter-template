@@ -1,8 +1,7 @@
 # Project Tasks
 
 ## Current Sprint
-_Add your current tasks here_
-
+Fix the error by improving the README doc, and trying out the actual download and install method from github. Feel free to commit and push any files that you change that you would like to verify on github. don't commit anything from .vibe, as this folder shouldn't exist in the main project. 
 ### 🔍 Research Phase
 - [ ] Understand project requirements
 - [ ] Research necessary technologies
