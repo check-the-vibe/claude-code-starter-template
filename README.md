@@ -1,38 +1,56 @@
-# Vibe Stack Starter Template
+# Claude Code Starter Template
 
 A quick-start template to get you vibing with Claude code development! This template provides a solid foundation for building projects with Claude AI assistance, complete with automated setup scripts for both Unix/macOS and Windows environments.
 
 ## 🚀 Quick Start
 
-Choose your preferred installation method:
+### Unix/macOS/Linux
 
-### Option 1: Clone the Repository
+```bash
+# Interactive mode - choose your template
+curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash
+
+# Use specific template
+curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash -s -- --template default
+
+# List available templates
+curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash -s -- --list
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Interactive mode - choose your template
+irm https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.ps1 | iex
+
+# Use specific template
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.ps1))) -Template default
+
+# List available templates
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.ps1))) -List
+```
+
+### Alternative: Clone Repository
 
 ```bash
 git clone https://github.com/check-the-vibe/claude-code-starter-template.git
 cd claude-code-starter-template
+
+# Interactive mode
+./setup.sh  # or .\setup.ps1 on Windows
+
+# Use specific template
+./setup.sh --template default  # or .\setup.ps1 -Template default
+
+# List templates
+./setup.sh --list  # or .\setup.ps1 -List
 ```
 
-### Option 2: Direct Setup (Bash/Unix/macOS)
+## 📦 Available Templates
 
-Run the setup script directly from GitHub:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash
-```
-
-Or download and run locally for more control:
-
-```bash
-# Download, run, and cleanup
-curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh -o setup-temp.sh && bash setup-temp.sh && rm setup-temp.sh
-```
-
-### Option 3: One-Line Setup (PowerShell/Windows)
-
-```powershell
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.ps1" -UseBasicParsing | Invoke-Expression
-```
+- **default** - Basic Claude Code setup with .vibe structure
+- **nodejs-react** - Node.js + React project template  
+- **python-project** - Python project template with virtual environment
 
 ## 🎯 What's Included
 

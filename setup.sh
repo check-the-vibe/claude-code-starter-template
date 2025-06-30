@@ -215,11 +215,6 @@ execute_template() {
     local template=$1
     local template_setup="$TEMPLATES_DIR/$template/setup.sh"
     
-    if [[ ! -f "$template_setup" ]]; then
-        print_color "$RED" "Setup script not found for template: $template"
-        exit 1
-    fi
-    
     print_header "Executing $template Template"
     
     # Check if running locally or remotely
@@ -229,7 +224,10 @@ execute_template() {
         print_color "$BLUE" "Fetching template from: $template_url"
         
         if command -v curl &> /dev/null; then
-            curl -fsSL "$template_url" | bash
+            if ! curl -fsSL "$template_url" | bash; then
+                print_color "$RED" "Error: Failed to fetch or execute template from $template_url"
+                exit 1
+            fi
         else
             print_color "$RED" "Error: curl is required for remote template execution"
             exit 1
@@ -343,7 +341,15 @@ main() {
         fi
     else
         # Interactive selection
-        selected_template=$(select_template "${templates_array[*]}")
+        if [[ -t 0 ]]; then
+            # Running interactively (terminal is attached)
+            selected_template=$(select_template "${templates_array[*]}")
+        else
+            # Non-interactive mode - use default template
+            print_color "$YELLOW" "No template specified and running non-interactively."
+            print_color "$BLUE" "Using default template..."
+            selected_template="default"
+        fi
     fi
     
     # Execute selected template
