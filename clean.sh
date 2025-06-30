@@ -12,8 +12,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}Claude Code Starter Template - Clean Script${NC}"
-echo "=========================================="
+echo -e "${BLUE}Claude Code Node.js React Template - Clean Script${NC}"
+echo "================================================="
 echo
 
 # Check what exists
