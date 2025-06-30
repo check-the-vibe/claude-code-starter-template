@@ -4,6 +4,9 @@
 # This script lists available templates and executes the selected one
 # Templates are self-contained setup scripts with embedded content
 
+# Save BASH_SOURCE before enabling strict mode
+SCRIPT_SOURCE="${BASH_SOURCE[0]:-}"
+
 set -euo pipefail
 
 # Colors for output
@@ -17,7 +20,18 @@ NC='\033[0m' # No Color
 
 # Script configuration
 SCRIPT_VERSION="3.0.0"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Detect if script is being run locally or via curl
+if [[ -n "$SCRIPT_SOURCE" ]] && [[ -f "$SCRIPT_SOURCE" ]]; then
+    # Local execution
+    SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+    IS_REMOTE=false
+else
+    # Remote execution (via curl)
+    SCRIPT_DIR="."
+    IS_REMOTE=true
+fi
+
 TEMPLATES_DIR="${SCRIPT_DIR}/templates"
 VIBE_DIR=".vibe"
 CLAUDE_FILE="CLAUDE.md"
@@ -103,17 +117,23 @@ archive_vibe() {
 list_templates() {
     local templates=()
     
-    if [[ -d "$TEMPLATES_DIR" ]]; then
-        for template_dir in "$TEMPLATES_DIR"/*; do
-            if [[ -d "$template_dir" ]] && [[ -f "$template_dir/setup.sh" ]]; then
-                templates+=("$(basename "$template_dir")")
-            fi
-        done
-    fi
-    
-    if [[ ${#templates[@]} -eq 0 ]]; then
-        print_color "$RED" "No templates found in $TEMPLATES_DIR"
-        exit 1
+    if [[ "$IS_REMOTE" == "true" ]]; then
+        # When running remotely, use predefined template list
+        templates=("default" "nodejs-react" "python-project")
+    else
+        # Local execution - scan templates directory
+        if [[ -d "$TEMPLATES_DIR" ]]; then
+            for template_dir in "$TEMPLATES_DIR"/*; do
+                if [[ -d "$template_dir" ]] && [[ -f "$template_dir/setup.sh" ]]; then
+                    templates+=("$(basename "$template_dir")")
+                fi
+            done
+        fi
+        
+        if [[ ${#templates[@]} -eq 0 ]]; then
+            print_color "$RED" "No templates found in $TEMPLATES_DIR"
+            exit 1
+        fi
     fi
     
     echo "${templates[@]}"
@@ -133,9 +153,25 @@ select_template() {
     for template in "${templates[@]}"; do
         local desc="Template"
         
-        # Read description from TEMPLATE.md if it exists
-        if [[ -f "$TEMPLATES_DIR/$template/TEMPLATE.md" ]]; then
+        # Read description from TEMPLATE.md if it exists (only for local execution)
+        if [[ "$IS_REMOTE" == "false" ]] && [[ -f "$TEMPLATES_DIR/$template/TEMPLATE.md" ]]; then
             desc=$(head -n 5 "$TEMPLATES_DIR/$template/TEMPLATE.md" 2>/dev/null | grep -E "^#|Description:" | sed 's/^#\s*//' | sed 's/Description:\s*//' | head -n 1) || desc="No description"
+        else
+            # Provide descriptions for remote templates
+            case "$template" in
+                "default")
+                    desc="Basic Claude Code setup with .vibe structure"
+                    ;;
+                "nodejs-react")
+                    desc="Node.js + React project template"
+                    ;;
+                "python-project")
+                    desc="Python project template with virtual environment"
+                    ;;
+                *)
+                    desc="Template"
+                    ;;
+            esac
         fi
         
         print_color "$CYAN" "$index. $template"
@@ -186,25 +222,27 @@ execute_template() {
     
     print_header "Executing $template Template"
     
-    # Check if running locally or should use curl
-    if [[ -f "$template_setup" ]] && [[ -n "${LOCAL_EXEC:-}" ]]; then
-        # Local execution
-        print_color "$BLUE" "Executing local template setup..."
-        bash "$template_setup"
-    else
-        # Execute via curl (simulating remote execution)
+    # Check if running locally or remotely
+    if [[ "$IS_REMOTE" == "true" ]]; then
+        # Remote execution - fetch template from GitHub
         local template_url="${GITHUB_RAW_URL}/templates/${template}/setup.sh"
-        print_color "$BLUE" "Fetching and executing template from: $template_url"
+        print_color "$BLUE" "Fetching template from: $template_url"
         
-        # For local testing, we'll use the local file
-        # In production, this would actually curl from GitHub
         if command -v curl &> /dev/null; then
-            # Simulate curl execution by reading local file
-            cat "$template_setup" | bash
+            curl -fsSL "$template_url" | bash
         else
-            print_color "$RED" "Error: curl is required for template execution"
+            print_color "$RED" "Error: curl is required for remote template execution"
             exit 1
         fi
+    else
+        # Local execution
+        if [[ ! -f "$template_setup" ]]; then
+            print_color "$RED" "Setup script not found for template: $template"
+            exit 1
+        fi
+        
+        print_color "$BLUE" "Executing local template setup..."
+        bash "$template_setup"
     fi
 }
 

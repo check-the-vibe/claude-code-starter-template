@@ -13,19 +13,19 @@ git clone https://github.com/check-the-vibe/claude-code-starter-template.git
 cd claude-code-starter-template
 ```
 
-### Option 2: Interactive Setup (Bash/Unix/macOS)
+### Option 2: Direct Setup (Bash/Unix/macOS)
 
-For an interactive setup with template selection:
+Run the setup script directly from GitHub:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash
+```
+
+Or download and run locally for more control:
 
 ```bash
 # Download, run, and cleanup
 curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh -o setup-temp.sh && bash setup-temp.sh && rm setup-temp.sh
-```
-
-For non-interactive setup with default template:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash -s -- --skip-interactive
 ```
 
 ### Option 3: One-Line Setup (PowerShell/Windows)
