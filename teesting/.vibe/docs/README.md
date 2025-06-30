@@ -1,17 +1,25 @@
-# Project Documentation
+# Project Documentation - Node.js React Application
 
-This directory contains project-specific documentation gathered during development.
+This directory contains project-specific documentation for the full-stack JavaScript application.
 
 ## Structure
-- Technical documentation
-- API references
-- Architecture decisions
-- Implementation notes
-- Troubleshooting guides
+- Frontend architecture documentation
+- Backend API documentation
+- Component library documentation
+- State management patterns
+- Testing strategies
+- Deployment guides
+
+## Key Areas
+- **components/**: React component documentation
+- **api/**: API endpoint documentation
+- **architecture/**: System design documents
+- **guides/**: How-to guides and tutorials
 
 ## Adding Documentation
-When you discover useful information during development:
-1. Create appropriately named files here
-2. Use clear, descriptive filenames
-3. Include source links when applicable
-4. Keep documentation up to date
+When documenting JavaScript/React code:
+1. Include JSDoc comments in code
+2. Document component props and state
+3. Provide API usage examples
+4. Keep dependencies documented
+5. Note any browser compatibility issues

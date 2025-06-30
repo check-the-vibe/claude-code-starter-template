@@ -4,10 +4,18 @@
 
 _No errors recorded yet. Errors will be logged here with timestamps and context._
 
+## Common JavaScript/React Errors to Watch For:
+- Module not found errors
+- React hook violations
+- CORS issues
+- Async/await errors
+- TypeScript type errors
+- Build/compilation errors
+
 ## Error Format Example:
 ```
-[2024-01-01 10:30:00] Error Type: Build Failed
-Description: npm build failed with exit code 1
-Context: Attempting to build the project after adding new dependencies
-Solution: [Document the solution once resolved]
+[2024-01-01 10:30:00] Error Type: Module Not Found
+Description: Cannot find module 'react-router-dom'
+Context: Attempting to set up routing
+Solution: npm install react-router-dom
 ```

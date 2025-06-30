@@ -6,21 +6,44 @@
 - **Operating System**: Linux
 - **Current Directory**: /workspaces/claude-code-starter-template/teesting
 - **User**: codespace
-- **Date Initialized**: 2025-06-30 19:57:24
+- **Date Initialized**: 2025-06-30 19:58:08
 
 ## Project Context
 - **Git Repository**: Yes
 - **Platform**: Local Development Environment
+- **Template**: Node.js React Full-Stack
+
+## Required Tools
+- Node.js (v16+ recommended)
+- npm or yarn
+- Git
+- Modern web browser
+- Code editor (VS Code recommended)
+
+## Project Structure (Recommended)
+```
+project-root/
+├── client/          # React frontend
+│   ├── src/
+│   ├── public/
+│   └── package.json
+├── server/          # Node.js backend
+│   ├── src/
+│   ├── tests/
+│   └── package.json
+├── shared/          # Shared types/utilities
+├── .vibe/           # Claude Code configuration
+├── CLAUDE.md
+└── package.json     # Root package.json
+```
 
 ## Available Tools
-- Shell/Bash scripting
-- File system access (read/write)
-- Git operations
-- Web fetch capabilities
-- Code execution
-
-## Constraints
-_Add any specific constraints or limitations here_
+- React DevTools
+- Node.js debugging
+- npm/yarn package management
+- ESLint/Prettier formatting
+- Jest/React Testing Library
+- TypeScript (optional)
 
 ## Notes
 _Add any environment-specific notes or configurations_
