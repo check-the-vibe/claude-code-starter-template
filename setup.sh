@@ -119,7 +119,7 @@ list_templates() {
     
     if [[ "$IS_REMOTE" == "true" ]]; then
         # When running remotely, use predefined template list
-        templates=("default" "nodejs-react" "python-project")
+        templates=("default" "nodejs-react" "python-project" "research-writing")
     else
         # Local execution - scan templates directory
         if [[ -d "$TEMPLATES_DIR" ]]; then
@@ -167,6 +167,9 @@ select_template() {
                     ;;
                 "python-project")
                     desc="Python project template with virtual environment"
+                    ;;
+                "research-writing")
+                    desc="Research and writing project template"
                     ;;
                 *)
                     desc="Template"

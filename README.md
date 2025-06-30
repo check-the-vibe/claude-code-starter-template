@@ -62,6 +62,7 @@ cd claude-code-starter-template
 - **default** - Basic Claude Code setup with .vibe structure
 - **nodejs-react** - Node.js + React project template  
 - **python-project** - Python project template with virtual environment
+- **research-writing** - Research and writing project template
 
 ## 🎯 What's Included
 
