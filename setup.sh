@@ -32,6 +32,9 @@ CLAUDE_FILE="CLAUDE.md"
 GITHUB_REPO="check-the-vibe/claude-code-starter-template"
 GITHUB_RAW_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/main"
 
+# Global variable for temporary templates directory (used in curl-to-bash mode)
+TEMP_TEMPLATES_DIR=""
+
 # Predefined list of available templates
 AVAILABLE_TEMPLATES=(
     "default"
@@ -63,8 +66,9 @@ is_curl_bash() {
 download_templates() {
     print_color "$BLUE" "Downloading templates from GitHub..."
     
-    # Create temporary directory
+    # Create temporary directory and save current directory
     local temp_dir=$(mktemp -d)
+    local current_dir=$(pwd)
     cd "$temp_dir"
     
     # Download templates using predefined list
@@ -84,6 +88,11 @@ download_templates() {
         exit 1
     fi
     
+    # Return to original directory
+    cd "$current_dir"
+    
+    # Set global variable for temp directory
+    TEMP_TEMPLATES_DIR="${temp_dir}"
     TEMPLATES_DIR="${temp_dir}/templates"
 }
 
@@ -137,7 +146,12 @@ confirm() {
 list_templates() {
     local templates=()
     
-    if [[ -d "$TEMPLATES_DIR" ]]; then
+    # If running via curl-to-bash and templates were downloaded, use the predefined list
+    if is_curl_bash && [[ -n "$TEMPLATES_DIR" ]]; then
+        # Use predefined list for curl-to-bash mode
+        templates=("${AVAILABLE_TEMPLATES[@]}")
+    elif [[ -d "$TEMPLATES_DIR" ]]; then
+        # For local execution, scan the templates directory
         for template_dir in "$TEMPLATES_DIR"/*; do
             if [[ -d "$template_dir" ]]; then
                 templates+=("$(basename "$template_dir")")
@@ -155,40 +169,12 @@ list_templates() {
     return 0
 }
 
-# Function to search templates with autocomplete
-search_templates() {
-    local templates=($1)
-    local search_term=""
-    local filtered_templates=()
-    
-    print_header "Search Templates"
-    print_color "$BLUE" "Enter a search term to filter templates, or press Enter to see all:"
-    echo
-    
-    # Read search term
-    read -p "Search: " search_term
-    
-    # Filter templates based on search term (case-insensitive)
-    if [[ -z "$search_term" ]]; then
-        filtered_templates=("${templates[@]}")
-    else
-        # Use grep for case-insensitive matching (more portable)
-        for template in "${templates[@]}"; do
-            if echo "$template" | grep -qi "$search_term"; then
-                filtered_templates+=("$template")
-            fi
-        done
-    fi
-    
-    # Return filtered list
-    echo "${filtered_templates[@]}"
-}
+# Removed search_templates() function - simplified template selection
 
 # Function to display template selection menu
 select_template() {
     local templates=($1)
     local selected=""
-    local filtered_templates=()
     
     # If only one template, select it automatically
     if [[ ${#templates[@]} -eq 1 ]]; then
@@ -196,69 +182,53 @@ select_template() {
         return
     fi
     
-    print_color "$CYAN" "Found ${#templates[@]} templates available."
+    print_header "Available Templates"
+    print_color "$CYAN" "Found ${#templates[@]} templates:"
     echo
     
-    # Search interface is now the primary method
-    while true; do
-        # Get filtered templates from search
-        local filtered=$(search_templates "${templates[*]}")
-        filtered_templates=($filtered)
+    # Display all templates with descriptions
+    local index=1
+    for template in "${templates[@]}"; do
+        local desc="Default template"
         
-        # Check if any templates match
-        if [[ ${#filtered_templates[@]} -eq 0 ]]; then
-            print_color "$RED" "No templates found matching your search."
-            if ! confirm "Would you like to search again?" "Y"; then
-                print_color "$RED" "✗ Template selection cancelled"
-                exit 1
-            fi
-            continue
+        # Read description from TEMPLATE.md if it exists
+        if [[ -f "$TEMPLATES_DIR/$template/TEMPLATE.md" ]]; then
+            desc=$(head -n 3 "$TEMPLATES_DIR/$template/TEMPLATE.md" 2>/dev/null | grep -E "^#|Description:" | sed 's/^#\s*//' | sed 's/Description:\s*//' | head -n 1) || desc="No description"
         fi
         
-        # If only one template matches, select it automatically
-        if [[ ${#filtered_templates[@]} -eq 1 ]]; then
-            selected="${filtered_templates[0]}"
-            print_color "$GREEN" "✓ Selected template: $selected"
-            break
-        fi
-        
-        # Show filtered templates
-        print_header "Available Templates"
-        
-        for template in "${filtered_templates[@]}"; do
-            local desc="Default template"
-            
-            # Read description from TEMPLATE.md if it exists
-            if [[ -f "$TEMPLATES_DIR/$template/TEMPLATE.md" ]]; then
-                desc=$(head -n 3 "$TEMPLATES_DIR/$template/TEMPLATE.md" 2>/dev/null | grep -E "^#|Description:" | sed 's/^#\s*//' | sed 's/Description:\s*//' | head -n 1) || desc="No description"
-            fi
-            
-            print_color "$CYAN" "• $template"
-            print_color "$BLUE" "  $desc"
-            echo
-        done
-        
-        # Ask user to select by name
-        print_color "$YELLOW" "Type the exact template name to select it, or 's' to search again:"
-        read -p "> " choice
-        
-        if [[ "$choice" == "s" || "$choice" == "S" ]]; then
-            # Search again
-            continue
-        fi
-        
-        # Check if the choice matches one of the filtered templates
-        for template in "${filtered_templates[@]}"; do
-            if [[ "$template" == "$choice" ]]; then
-                selected="$template"
-                break 2
-            fi
-        done
-        
-        # If no exact match, show error
-        print_color "$RED" "Invalid selection. Please type the exact template name or 's' to search again."
+        print_color "$CYAN" "$index. $template"
+        print_color "$BLUE" "   $desc"
+        echo
+        ((index++))
     done
     
+    # Ask user to select by name or number
+    while true; do
+        print_color "$YELLOW" "Enter template name or number (1-${#templates[@]}):"
+        read -p "> " choice
+        
+        # Check if choice is a number
+        if [[ "$choice" =~ ^[0-9]+$ ]]; then
+            if [[ $choice -ge 1 && $choice -le ${#templates[@]} ]]; then
+                selected="${templates[$((choice-1))]}"
+                break
+            else
+                print_color "$RED" "Invalid number. Please enter a number between 1 and ${#templates[@]}."
+                continue
+            fi
+        else
+            # Check if the choice matches a template name
+            for template in "${templates[@]}"; do
+                if [[ "$template" == "$choice" ]]; then
+                    selected="$template"
+                    break 2
+                fi
+            done
+            print_color "$RED" "Invalid template name. Please enter a valid template name or number."
+        fi
+    done
+    
+    print_color "$GREEN" "✓ Selected template: $selected"
     echo "$selected"
 }
 
@@ -564,6 +534,70 @@ git commit -m \"\" # Commit changes
 4. Update progress regularly
 5. Commit changes when reaching logical stopping points" "CLAUDE.md"
     
+    # Create clean.sh script
+    create_file "clean.sh" '#!/bin/bash
+
+# Clean script to remove .vibe directory and CLAUDE.md
+# This helps reset the project to a clean state
+
+set -e
+
+# Colors for output
+GREEN='\''\033[0;32m'\''
+RED='\''\033[0;31m'\''
+YELLOW='\''\033[1;33m'\''
+BLUE='\''\033[0;34m'\''
+NC='\''\033[0m'\'' # No Color
+
+echo -e "${BLUE}Claude Code Starter Template - Clean Script${NC}"
+echo "=========================================="
+echo
+
+# Check what exists
+FILES_TO_REMOVE=()
+
+if [[ -d ".vibe" ]]; then
+    FILES_TO_REMOVE+=(".vibe/")
+fi
+
+if [[ -f "CLAUDE.md" ]]; then
+    FILES_TO_REMOVE+=("CLAUDE.md")
+fi
+
+# If nothing to remove, exit
+if [[ ${#FILES_TO_REMOVE[@]} -eq 0 ]]; then
+    echo -e "${GREEN}✓ Already clean - no .vibe/ or CLAUDE.md found${NC}"
+    exit 0
+fi
+
+# Show what will be removed
+echo -e "${YELLOW}The following will be removed:${NC}"
+for item in "${FILES_TO_REMOVE[@]}"; do
+    echo "  - $item"
+done
+echo
+
+# Confirm with user
+read -p "Are you sure you want to remove these files? (y/N) " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Remove files
+    for item in "${FILES_TO_REMOVE[@]}"; do
+        rm -rf "$item"
+        echo -e "${GREEN}✓ Removed $item${NC}"
+    done
+    echo
+    echo -e "${GREEN}✓ Cleanup complete!${NC}"
+    echo -e "${BLUE}You can now run setup.sh to create a fresh configuration.${NC}"
+else
+    echo -e "${RED}✗ Cleanup cancelled${NC}"
+    exit 1
+fi' "clean.sh"
+    
+    # Make clean.sh executable
+    chmod +x clean.sh
+    
     # Create docs/README.md
     create_file "$VIBE_DIR/docs/README.md" "# Project Documentation
 
@@ -842,6 +876,7 @@ main() {
         echo "      └── README.md"
     }
     echo "  $CLAUDE_FILE"
+    echo "  clean.sh"
     
     echo
     print_color "$YELLOW" "🚀 Next steps:"
@@ -851,8 +886,9 @@ main() {
     echo "  4. Start developing with Claude Code!"
     
     echo
-    print_color "$CYAN" "💡 Pro tip: Save your configuration as a template:"
-    echo "     ./setup.sh --save-template my-template"
+    print_color "$CYAN" "💡 Pro tips:"
+    echo "  - Save your configuration as a template: ./setup.sh --save-template my-template"
+    echo "  - Reset to start fresh: ./clean.sh"
     
     # Prompt for git operations
     if check_git_repo && [[ "$skip_interactive" != "true" ]] && confirm "Would you like to create an initial commit?" "Y"; then
@@ -875,8 +911,8 @@ Generated with setup.sh v$SCRIPT_VERSION"
     fi
     
     # Clean up temp directory if curl-to-bash
-    if is_curl_bash && [[ -d "${temp_dir:-}" ]]; then
-        rm -rf "$temp_dir"
+    if is_curl_bash && [[ -d "${TEMP_TEMPLATES_DIR:-}" ]]; then
+        rm -rf "$TEMP_TEMPLATES_DIR"
     fi
 }
 

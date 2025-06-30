@@ -30,4 +30,4 @@ build/
 out/
 
 # Claude Code backups
-.vibe/backups/
+.vibe/backups/test-runs/
