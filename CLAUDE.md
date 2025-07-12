@@ -173,6 +173,178 @@ git push
 - Always check for available libraries before assuming
 - Never expose or commit secrets/keys
 
+## Working with Environment Variables
+
+### Finding Existing .env Files
+
+When working on a project, always check for existing environment files:
+
+```bash
+# Search for .env files in the project
+source .vibe/init
+vibe-session env-search . "find . -name '.env*' -type f | grep -v node_modules"
+sleep 1
+.vibe/tail env-search
+
+# Or use grep to find environment variable references
+vibe-session env-refs . "grep -r 'process.env' --include='*.js' --include='*.ts' ."
+.vibe/tail env-refs
+```
+
+### Creating New .env Files
+
+When the user needs environment variables:
+
+1. **Check for existing .env.example or similar**:
+   ```bash
+   vibe-session check-env . "ls -la .env*"
+   .vibe/tail check-env
+   ```
+
+2. **Create .env file based on requirements**:
+   ```bash
+   # If .env.example exists, copy it
+   cp .env.example .env
+   
+   # Or create new .env file
+   cat > .env << 'EOF'
+   # Application Configuration
+   NODE_ENV=development
+   PORT=3000
+   
+   # Database Configuration
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=myapp
+   
+   # API Keys (replace with actual values)
+   API_KEY=your-api-key-here
+   SECRET_KEY=your-secret-key-here
+   EOF
+   ```
+
+3. **Add to .gitignore** (if not already present):
+   ```bash
+   # Check if .env is already ignored
+   grep "^\.env$" .gitignore || echo ".env" >> .gitignore
+   ```
+
+### Using .env Files in Sessions
+
+```bash
+# Single .env file
+vibe-session dev-server . "npm run dev" -e .env
+
+# Multiple env files (for different environments)
+vibe-session prod-test . "npm start" -e .env -e .env.production
+
+# Check if environment variables are loaded
+vibe-session check-vars . "env | grep -E 'API_KEY|DB_HOST|PORT'" -e .env
+.vibe/tail check-vars
+```
+
+### Adding Environment Variables to Running Sessions
+
+For sessions that are already running, you can:
+
+1. **Attach and source the .env file manually**:
+   ```bash
+   vibe-attach dev-server
+   # Inside the session:
+   set -a
+   source .env
+   set +a
+   # Press Ctrl-b d to detach
+   ```
+
+2. **Send commands to load env file**:
+   ```bash
+   # Send source command to running session
+   tmux send-keys -t vibe-dev-server "set -a; source .env; set +a" C-m
+   ```
+
+3. **Restart the session with env files**:
+   ```bash
+   # Kill the old session
+   vibe-kill dev-server
+   # Start new session with env files
+   vibe-session dev-server . "npm run dev" -e .env
+   ```
+
+### Best Practices for .env Files
+
+1. **Never commit .env files with secrets**:
+   - Always add `.env` to `.gitignore`
+   - Create `.env.example` with dummy values for documentation
+
+2. **Use descriptive variable names**:
+   ```
+   # Good
+   DATABASE_CONNECTION_STRING=postgresql://...
+   STRIPE_SECRET_KEY=sk_test_...
+   
+   # Avoid
+   DB=postgresql://...
+   KEY=sk_test_...
+   ```
+
+3. **Document required variables**:
+   - Create `.env.example` with all required variables
+   - Add comments explaining each variable's purpose
+
+4. **Environment-specific files**:
+   ```
+   .env                # Default/development
+   .env.local          # Local overrides (gitignored)
+   .env.production     # Production settings
+   .env.test           # Test environment
+   ```
+
+### Troubleshooting Environment Variables
+
+If environment variables aren't working:
+
+```bash
+# Debug session to check variables
+vibe-session debug-env . "echo 'Checking environment...'; env | sort" -e .env
+.vibe/tail debug-env
+
+# Test specific variable
+vibe-session test-var . "echo \"MY_VAR is: \$MY_VAR\"" -e .env
+.vibe/tail test-var
+
+# Check file syntax (common issues)
+vibe-session check-syntax . "cat .env | grep -E '^\s*[A-Z_]+=' | head -10"
+.vibe/tail check-syntax
+```
+
+### Common Workflow Example
+
+When a user asks to work with a Node.js application that needs environment variables:
+
+```bash
+# 1. Initialize and search for existing env files
+source .vibe/init
+vibe-session env-check . "ls -la .env* && echo '---' && cat .env.example 2>/dev/null || echo 'No .env.example found'"
+sleep 1
+.vibe/tail env-check
+
+# 2. Create .env based on findings
+cat > .env << 'EOF'
+NODE_ENV=development
+PORT=3000
+DATABASE_URL=postgresql://user:pass@localhost:5432/dbname
+API_KEY=development-key-12345
+EOF
+
+# 3. Ensure .env is gitignored
+grep "^\.env$" .gitignore || echo ".env" >> .gitignore
+
+# 4. Start development with env vars
+vibe-session dev . "npm install && npm run dev" -e .env
+vibe-logs dev -f
+```
+
 ## Getting Started
 
 1. Review all .vibe files to understand context
