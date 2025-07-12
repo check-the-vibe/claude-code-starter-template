@@ -1,0 +1,5 @@
+session_name=long-task
+created=2025-07-12T17:11:57+00:00
+working_dir=.
+log_file=/workspaces/claude-code-starter-template/.vibe/logs/long-task-20250712-171157.log
+command=for i in {1..10}; do echo "Processing item $i..."; sleep 1; done; echo 'Long task completed\!'

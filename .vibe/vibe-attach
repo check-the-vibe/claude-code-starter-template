@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# vibe-attach - Attach to a vibe-managed tmux session
+# Usage: vibe-attach <session-name>
+
+VIBE_DIR="$(dirname "$0")"
+
+# Check if session name was provided
+if [[ $# -eq 0 ]]; then
+    echo "Usage: vibe-attach <session-name>"
+    echo ""
+    echo "Available sessions:"
+    "$VIBE_DIR/vibe-list"
+    exit 1
+fi
+
+SESSION_NAME="$1"
+FULL_SESSION_NAME="vibe-$SESSION_NAME"
+
+# Check if session exists
+if ! tmux has-session -t "=$FULL_SESSION_NAME" 2>/dev/null; then
+    echo "Error: Session '$SESSION_NAME' does not exist"
+    echo ""
+    echo "Available sessions:"
+    "$VIBE_DIR/vibe-list"
+    exit 1
+fi
+
+# Check if we're already in a tmux session
+if [[ -n "$TMUX" ]]; then
+    echo "Warning: You are already in a tmux session."
+    echo "Switching to session '$SESSION_NAME'..."
+    tmux switch-client -t "$FULL_SESSION_NAME"
+else
+    echo "Attaching to session: $SESSION_NAME"
+    tmux attach-session -t "$FULL_SESSION_NAME"
+fi

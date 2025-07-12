@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# vibe-list - List all vibe-managed tmux sessions
+# Usage: vibe-list [-v|--verbose]
+
+VIBE_DIR="$(dirname "$0")"
+SESSIONS_DIR="$VIBE_DIR/sessions"
+
+# Parse arguments
+VERBOSE=false
+if [[ "$1" == "-v" ]] || [[ "$1" == "--verbose" ]]; then
+    VERBOSE=true
+fi
+
+# Function to get session status
+get_session_status() {
+    local SESSION_NAME="$1"
+    if tmux has-session -t "=vibe-$SESSION_NAME" 2>/dev/null; then
+        # Check if attached
+        local ATTACHED=$(tmux list-sessions -F "#{session_name}:#{session_attached}" 2>/dev/null | grep "^vibe-$SESSION_NAME:" | cut -d: -f2)
+        if [[ "$ATTACHED" == "1" ]]; then
+            echo "attached"
+        else
+            echo "detached"
+        fi
+    else
+        echo "dead"
+    fi
+}
+
+# Function to format duration
+format_duration() {
+    local START_TIME="$1"
+    local NOW=$(date +%s)
+    local START=$(date -d "$START_TIME" +%s 2>/dev/null || echo "$NOW")
+    local DIFF=$((NOW - START))
+    
+    if [[ $DIFF -lt 60 ]]; then
+        echo "${DIFF}s"
+    elif [[ $DIFF -lt 3600 ]]; then
+        echo "$((DIFF / 60))m"
+    elif [[ $DIFF -lt 86400 ]]; then
+        echo "$((DIFF / 3600))h"
+    else
+        echo "$((DIFF / 86400))d"
+    fi
+}
+
+# Header
+echo "Vibe Sessions:"
+echo "=============="
+
+# Check if there are any sessions
+if ! ls "$SESSIONS_DIR"/*.info >/dev/null 2>&1 && ! tmux list-sessions 2>/dev/null | grep -q "^vibe-"; then
+    echo "No sessions found."
+    echo ""
+    echo "Create a new session with: vibe-session <session-name>"
+    exit 0
+fi
+
+# List format
+if [[ "$VERBOSE" == true ]]; then
+    printf "%-20s %-10s %-10s %-30s %s\n" "SESSION" "STATUS" "AGE" "WORKING DIR" "COMMAND"
+    printf "%-20s %-10s %-10s %-30s %s\n" "-------" "------" "---" "-----------" "-------"
+else
+    printf "%-20s %-10s %s\n" "SESSION" "STATUS" "AGE"
+    printf "%-20s %-10s %s\n" "-------" "------" "---"
+fi
+
+# List all vibe sessions from tmux
+tmux list-sessions -F "#{session_name}" 2>/dev/null | grep "^vibe-" | while read -r FULL_SESSION; do
+    SESSION_NAME="${FULL_SESSION#vibe-}"
+    STATUS=$(get_session_status "$SESSION_NAME")
+    
+    # Try to get info from saved file
+    INFO_FILE="$SESSIONS_DIR/$SESSION_NAME.info"
+    if [[ -f "$INFO_FILE" ]]; then
+        CREATED=$(grep "^created=" "$INFO_FILE" 2>/dev/null | cut -d= -f2-)
+        WORKING_DIR=$(grep "^working_dir=" "$INFO_FILE" 2>/dev/null | cut -d= -f2-)
+        COMMAND=$(grep "^command=" "$INFO_FILE" 2>/dev/null | cut -d= -f2-)
+        AGE=$(format_duration "$CREATED")
+    else
+        AGE="unknown"
+        WORKING_DIR="unknown"
+        COMMAND=""
+    fi
+    
+    # Color code status
+    case "$STATUS" in
+        attached)
+            STATUS_COLOR="\033[32m$STATUS\033[0m"  # Green
+            ;;
+        detached)
+            STATUS_COLOR="\033[33m$STATUS\033[0m"  # Yellow
+            ;;
+        dead)
+            STATUS_COLOR="\033[31m$STATUS\033[0m"  # Red
+            ;;
+        *)
+            STATUS_COLOR="$STATUS"
+            ;;
+    esac
+    
+    if [[ "$VERBOSE" == true ]]; then
+        # Truncate long paths and commands
+        [[ ${#WORKING_DIR} -gt 30 ]] && WORKING_DIR="...${WORKING_DIR: -27}"
+        [[ ${#COMMAND} -gt 30 ]] && COMMAND="${COMMAND:0:27}..."
+        printf "%-20s %-10b %-10s %-30s %s\n" "$SESSION_NAME" "$STATUS_COLOR" "$AGE" "$WORKING_DIR" "$COMMAND"
+    else
+        printf "%-20s %-10b %s\n" "$SESSION_NAME" "$STATUS_COLOR" "$AGE"
+    fi
+done
+
+# Also check for orphaned session info files
+if [[ -d "$SESSIONS_DIR" ]]; then
+    for INFO_FILE in "$SESSIONS_DIR"/*.info; do
+        [[ ! -f "$INFO_FILE" ]] && continue
+        SESSION_NAME=$(basename "$INFO_FILE" .info)
+        if ! tmux has-session -t "=vibe-$SESSION_NAME" 2>/dev/null; then
+            if [[ "$VERBOSE" == true ]]; then
+                printf "%-20s %-10b %-10s %-30s %s\n" "$SESSION_NAME" "\033[31mdead\033[0m" "unknown" "-" "(orphaned)"
+            else
+                printf "%-20s %-10b %s\n" "$SESSION_NAME" "\033[31mdead\033[0m" "unknown"
+            fi
+        fi
+    done
+fi
+
+echo ""
+echo "Commands:"
+echo "  vibe-attach <session>  - Attach to a session"
+echo "  vibe-logs <session>    - View session logs"
+echo "  vibe-kill <session>    - Kill a session"

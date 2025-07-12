@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# vibe-session - Create and manage tmux sessions with automatic logging
+# Usage: vibe-session <session-name> [working-directory] [command]
+
+VIBE_DIR="$(dirname "$0")"
+LOGS_DIR="$VIBE_DIR/logs"
+SESSIONS_DIR="$VIBE_DIR/sessions"
+
+# Create necessary directories
+mkdir -p "$LOGS_DIR" "$SESSIONS_DIR"
+
+# Function to check if session exists
+session_exists() {
+    tmux has-session -t "=vibe-$1" 2>/dev/null
+}
+
+# Function to create a new session
+create_session() {
+    local SESSION_NAME="$1"
+    local WORKING_DIR="${2:-$(pwd)}"
+    local COMMAND="${3:-}"
+    local FULL_SESSION_NAME="vibe-$SESSION_NAME"
+    
+    # Check if session already exists
+    if session_exists "$SESSION_NAME"; then
+        echo "Error: Session '$SESSION_NAME' already exists"
+        echo "Use 'vibe-attach $SESSION_NAME' to attach to it"
+        exit 1
+    fi
+    
+    # Create the session
+    echo "Creating session: $SESSION_NAME"
+    tmux new-session -d -s "$FULL_SESSION_NAME" -c "$WORKING_DIR"
+    
+    # Enable logging for the session
+    local LOG_FILE="$LOGS_DIR/${SESSION_NAME}-$(date +%Y%m%d-%H%M%S).log"
+    tmux pipe-pane -t "$FULL_SESSION_NAME" -o "cat >> '$LOG_FILE'"
+    
+    # Save session info
+    echo "session_name=$SESSION_NAME" > "$SESSIONS_DIR/$SESSION_NAME.info"
+    echo "created=$(date -Iseconds)" >> "$SESSIONS_DIR/$SESSION_NAME.info"
+    echo "working_dir=$WORKING_DIR" >> "$SESSIONS_DIR/$SESSION_NAME.info"
+    echo "log_file=$LOG_FILE" >> "$SESSIONS_DIR/$SESSION_NAME.info"
+    
+    # Run command if provided
+    if [[ -n "$COMMAND" ]]; then
+        tmux send-keys -t "$FULL_SESSION_NAME" "$COMMAND" C-m
+        echo "command=$COMMAND" >> "$SESSIONS_DIR/$SESSION_NAME.info"
+    fi
+    
+    echo "Session created successfully!"
+    echo "  - Session: $SESSION_NAME"
+    echo "  - Working directory: $WORKING_DIR"
+    echo "  - Log file: $LOG_FILE"
+    [[ -n "$COMMAND" ]] && echo "  - Running command: $COMMAND"
+    echo ""
+    echo "To attach to this session, run: vibe-attach $SESSION_NAME"
+    echo "To view logs, run: vibe-logs $SESSION_NAME"
+}
+
+# Main script logic
+if [[ $# -eq 0 ]]; then
+    echo "Usage: vibe-session <session-name> [working-directory] [command]"
+    echo ""
+    echo "Examples:"
+    echo "  vibe-session dev                    # Create 'dev' session in current directory"
+    echo "  vibe-session build /path/to/project # Create 'build' session in specific directory"
+    echo "  vibe-session test . 'npm test'      # Create 'test' session and run command"
+    exit 1
+fi
+
+# Validate session name
+SESSION_NAME="$1"
+if [[ ! "$SESSION_NAME" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    echo "Error: Session name must contain only letters, numbers, hyphens, and underscores"
+    exit 1
+fi
+
+# Create the session
+create_session "$@"

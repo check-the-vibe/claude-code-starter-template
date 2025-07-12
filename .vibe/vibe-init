@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# vibe-init - Initialize vibe commands for easy access
+# Usage: source .vibe/vibe-init
+#
+# This script sets up aliases and functions for the vibe command system
+# Add this to your shell profile to make vibe commands available:
+#   echo "[ -f /path/to/project/.vibe/vibe-init ] && source /path/to/project/.vibe/vibe-init" >> ~/.bashrc
+
+# Get the directory where vibe scripts are located
+VIBE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Export VIBE_DIR for use in other scripts
+export VIBE_DIR
+
+# Create aliases for all vibe commands
+alias vibe-session="$VIBE_DIR/vibe-session"
+alias vibe-list="$VIBE_DIR/vibe-list"
+alias vibe-attach="$VIBE_DIR/vibe-attach"
+alias vibe-logs="$VIBE_DIR/vibe-logs"
+alias vibe-kill="$VIBE_DIR/vibe-kill"
+
+# Create short aliases for convenience
+alias vs="$VIBE_DIR/vibe-session"
+alias vl="$VIBE_DIR/vibe-list"
+alias va="$VIBE_DIR/vibe-attach"
+alias vlog="$VIBE_DIR/vibe-logs"
+alias vk="$VIBE_DIR/vibe-kill"
+
+# Main vibe command that provides help and acts as an entry point
+vibe() {
+    if [[ $# -eq 0 ]] || [[ "$1" == "help" ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+        echo "Vibe - tmux-based shell session management"
+        echo ""
+        echo "Commands:"
+        echo "  vibe-session <name> [dir] [cmd]  Create a new session"
+        echo "  vibe-list [-v]                   List all sessions"
+        echo "  vibe-attach <name>               Attach to a session"
+        echo "  vibe-logs <name> [-n N] [-f]     View session logs"
+        echo "  vibe-kill <name> [-f]            Kill a session"
+        echo ""
+        echo "Short aliases:"
+        echo "  vs    - vibe-session"
+        echo "  vl    - vibe-list"
+        echo "  va    - vibe-attach"
+        echo "  vlog  - vibe-logs"
+        echo "  vk    - vibe-kill"
+        echo ""
+        echo "Examples:"
+        echo "  vs dev                      # Create 'dev' session"
+        echo "  vs build . 'npm run build'  # Create session with command"
+        echo "  vl                          # List all sessions"
+        echo "  va dev                      # Attach to 'dev' session"
+        echo "  vlog dev -f                 # Follow logs from 'dev'"
+        echo "  vk dev                      # Kill 'dev' session"
+        return 0
+    fi
+    
+    echo "Unknown command: $1"
+    echo "Run 'vibe help' for usage information"
+    return 1
+}
+
+# Provide feedback that vibe is initialized
+echo "Vibe session manager initialized. Run 'vibe help' for usage."

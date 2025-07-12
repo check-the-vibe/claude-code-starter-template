@@ -17,9 +17,46 @@ The following files in the .vibe directory guide development:
 - **ENVIRONMENT.md**: System and project context
 - **docs/**: Additional project documentation
 
+### Vibe Session Management System
+
+The .vibe directory includes a tmux-based session management system for running shell commands:
+- **vibe-session**: Create and manage tmux sessions with automatic logging
+- **vibe-list**: List all active vibe sessions
+- **vibe-attach**: Attach to existing sessions
+- **vibe-logs**: View session logs (with follow mode)
+- **vibe-kill**: Terminate sessions
+- **vibe-init**: Initialize aliases for easy access
+
+## IMPORTANT: Shell Command Execution
+
+**ALL shell commands MUST be executed using the vibe session management system.** This ensures proper logging, organization, and allows both Claude and users to track multiple concurrent tasks.
+
+### Required Usage Pattern:
+1. Create a session: `vibe-session <name> [directory] [command]`
+2. Check session status: `vibe-list`
+3. View output: `vibe-logs <name>`
+4. Attach if needed: `vibe-attach <name>`
+5. Clean up: `vibe-kill <name>`
+
+### Examples:
+```bash
+# Instead of: npm install
+vibe-session install . "npm install"
+vibe-logs install -f
+
+# Instead of: npm run dev
+vibe-session dev-server . "npm run dev"
+vibe-logs dev-server -f
+
+# Instead of: python script.py
+vibe-session python-task . "python script.py"
+vibe-logs python-task
+```
+
 ## Workflow Guidelines
 
 ### 1. Initial Setup
+- Source vibe commands: `source .vibe/vibe-init`
 - Read ENVIRONMENT.md to understand the execution context
 - Review PERSONA.md to assume the appropriate role
 - Check ERRORS.md for any previous issues
@@ -49,25 +86,47 @@ The following files in the .vibe directory guide development:
 
 ## Development Commands
 
-Common commands for this project:
+Common commands for this project (using vibe sessions):
 ```bash
+# Initialize vibe (run once per shell session)
+source .vibe/vibe-init
+
 # NPM projects
-npm install       # Install dependencies
-npm run dev       # Start development server
-npm run build     # Build for production
-npm run test      # Run tests
-npm run lint      # Run linter
+vibe-session install . "npm install"       # Install dependencies
+vibe-session dev . "npm run dev"           # Start development server
+vibe-session build . "npm run build"       # Build for production
+vibe-session test . "npm run test"         # Run tests
+vibe-session lint . "npm run lint"         # Run linter
 
 # Python projects
-pip install -r requirements.txt  # Install dependencies
-python main.py                   # Run main script
-pytest                          # Run tests
-black .                         # Format code
+vibe-session pip-install . "pip install -r requirements.txt"  # Install dependencies
+vibe-session python-main . "python main.py"                   # Run main script
+vibe-session pytest . "pytest"                                # Run tests
+vibe-session format . "black ."                               # Format code
 
-# General
-git status        # Check git status
-git add .         # Stage changes
-git commit -m "" # Commit changes
+# View session output
+vibe-logs <session-name>      # View last 50 lines
+vibe-logs <session-name> -f   # Follow output (like tail -f)
+vibe-logs <session-name> -n 100  # View last 100 lines
+
+# Session management
+vibe-list          # List all sessions
+vibe-list -v       # List with details
+vibe-attach <name> # Attach to session
+vibe-kill <name>   # Kill session
+
+# Short aliases (after sourcing vibe-init)
+vs  # vibe-session
+vl  # vibe-list
+va  # vibe-attach
+vlog # vibe-logs
+vk  # vibe-kill
+
+# Git commands (can be run directly without sessions)
+git status
+git add .
+git commit -m "message"
+git push
 ```
 
 ## Important Reminders

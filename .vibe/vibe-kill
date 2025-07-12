@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# vibe-kill - Terminate a vibe-managed tmux session
+# Usage: vibe-kill <session-name> [-f|--force]
+
+VIBE_DIR="$(dirname "$0")"
+SESSIONS_DIR="$VIBE_DIR/sessions"
+
+# Parse arguments
+FORCE=false
+SESSION_NAME=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f|--force)
+            FORCE=true
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: vibe-kill <session-name> [-f|--force]"
+            echo ""
+            echo "Options:"
+            echo "  -f, --force  Force kill without confirmation"
+            echo ""
+            echo "Examples:"
+            echo "  vibe-kill dev          # Kill 'dev' session with confirmation"
+            echo "  vibe-kill build -f     # Force kill 'build' session"
+            exit 0
+            ;;
+        *)
+            SESSION_NAME="$1"
+            shift
+            ;;
+    esac
+done
+
+# Check if session name was provided
+if [[ -z "$SESSION_NAME" ]]; then
+    echo "Usage: vibe-kill <session-name> [-f|--force]"
+    echo ""
+    echo "Available sessions:"
+    "$VIBE_DIR/vibe-list"
+    exit 1
+fi
+
+FULL_SESSION_NAME="vibe-$SESSION_NAME"
+
+# Check if session exists
+if ! tmux has-session -t "=$FULL_SESSION_NAME" 2>/dev/null; then
+    echo "Error: Session '$SESSION_NAME' does not exist"
+    echo ""
+    echo "Available sessions:"
+    "$VIBE_DIR/vibe-list"
+    exit 1
+fi
+
+# Confirmation if not forced
+if [[ "$FORCE" != true ]]; then
+    echo "Are you sure you want to kill session '$SESSION_NAME'?"
+    echo "This will terminate all processes running in the session."
+    read -p "Type 'yes' to confirm: " CONFIRM
+    if [[ "$CONFIRM" != "yes" ]]; then
+        echo "Cancelled."
+        exit 0
+    fi
+fi
+
+# Kill the session
+echo "Killing session: $SESSION_NAME"
+tmux kill-session -t "$FULL_SESSION_NAME"
+
+# Clean up session info file
+INFO_FILE="$SESSIONS_DIR/$SESSION_NAME.info"
+if [[ -f "$INFO_FILE" ]]; then
+    rm "$INFO_FILE"
+fi
+
+echo "Session '$SESSION_NAME' has been terminated."
