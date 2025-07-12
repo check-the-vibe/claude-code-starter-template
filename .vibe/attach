@@ -10,7 +10,7 @@ if [[ $# -eq 0 ]]; then
     echo "Usage: vibe-attach <session-name>"
     echo ""
     echo "Available sessions:"
-    "$VIBE_DIR/vibe-list"
+    "$VIBE_DIR/list"
     exit 1
 fi
 
@@ -22,7 +22,7 @@ if ! tmux has-session -t "=$FULL_SESSION_NAME" 2>/dev/null; then
     echo "Error: Session '$SESSION_NAME' does not exist"
     echo ""
     echo "Available sessions:"
-    "$VIBE_DIR/vibe-list"
+    "$VIBE_DIR/list"
     exit 1
 fi
 

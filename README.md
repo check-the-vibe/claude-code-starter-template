@@ -1,154 +1,162 @@
-# Claude Code Starter Template
+# Vibe CLI - Claude Code Session Management
 
-A quick-start template to get you vibing with Claude code development! This template provides a solid foundation for building projects with Claude AI assistance, complete with automated setup scripts for both Unix/macOS and Windows environments.
-
-**Version:** 3.0.0
+A powerful tmux-based session management system designed for Claude Code, providing automatic logging, organized workflows, and seamless command execution tracking.
 
 ## 🚀 Quick Start
 
-### Unix/macOS/Linux
+### Installation
 
-```bash
-# Interactive mode - choose your template
-curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash
-
-# Non-interactive mode - automatically uses 'default' template
-echo "" | curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash
-
-# Use specific template
-curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash -s -- --template default
-
-# List available templates
-curl -fsSL https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.sh | bash -s -- --list
-```
-
-### Windows (PowerShell)
-
-```powershell
-# Interactive mode - choose your template
-irm https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.ps1 | iex
-
-# Use specific template
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.ps1))) -Template default
-
-# List available templates
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/check-the-vibe/claude-code-starter-template/main/setup.ps1))) -List
-```
-
-### Alternative: Clone Repository
+Clone this repository to get started:
 
 ```bash
 git clone https://github.com/check-the-vibe/claude-code-starter-template.git
 cd claude-code-starter-template
-
-# Interactive mode
-./setup.sh  # or .\setup.ps1 on Windows
-
-# Use specific template
-./setup.sh --template default  # or .\setup.ps1 -Template default
-
-# List templates
-./setup.sh --list  # or .\setup.ps1 -List
-
-# Local development mode (for testing templates)
-./setup.sh --local --template default
-
-# Show help
-./setup.sh --help
 ```
 
-## 📦 Available Templates
-
-- **default** - Basic Claude Code setup with .vibe structure
-- **nodejs-react** - Node.js + React project template  
-- **python-project** - Python project template with virtual environment
-- **research-writing** - Research and writing project template
-
-## 🎯 What's Included
-
-This starter template sets up everything you need to start coding effectively with Claude:
-
-- **Project Structure**: Organized folder layout for clean development
-- **Configuration Files**: Pre-configured settings for optimal Claude integration
-- **Development Tools**: Essential tools and dependencies
-- **Documentation**: Templates and examples to get you started
-- **Cross-Platform Support**: Works on Windows, macOS, and Linux
-
-## 📋 Requirements
-
-- **For Bash setup**: Unix/Linux/macOS with curl installed
-- **For PowerShell setup**: Windows with PowerShell 5.1+ or PowerShell Core
-- **For manual setup**: Git installed on your system
-
-## ⚙️ Advanced Options
-
-### Non-Interactive Mode
-When running the script in a non-interactive environment (e.g., CI/CD pipelines), the script automatically selects the 'default' template if no template is specified:
+### Initialize Vibe
 
 ```bash
-# This will use the default template automatically
-echo "" | ./setup.sh
+# Initialize vibe commands for your current shell session
+source .vibe/init
+
+# Or add to your shell profile for persistent access
+echo "[ -f $(pwd)/.vibe/init ] && source $(pwd)/.vibe/init" >> ~/.bashrc
 ```
 
-### Existing .vibe Directory
-If you already have a `.vibe` directory, the setup script will:
-1. Ask if you want to archive it (interactive mode)
-2. Create a timestamped backup (e.g., `.vibe_backup_20240101_120000.tar.gz`)
-3. Remove the old directory before creating the new structure
+## 🛡️ What is Vibe?
 
-### Local Development Mode
-The `--local` flag is useful for template developers who want to test templates locally without fetching from GitHub:
+Vibe is a session management system that wraps tmux to provide:
+
+- **Automatic Logging**: Every command and its output is logged with timestamps
+- **Session Management**: Run multiple commands concurrently in organized sessions
+- **Easy Monitoring**: Check status and view logs of any session
+- **Persistent History**: All command outputs are saved for later review
+- **Clean Organization**: Sessions and logs are structured systematically
+
+## 📚 Commands Overview
+
+### Core Commands
+
+- `vibe-session` - Create new tmux sessions with automatic logging
+- `vibe-list` - List all active sessions with their status
+- `vibe-logs` - View or follow session logs
+- `vibe-attach` - Attach to running sessions
+- `vibe-kill` - Terminate sessions cleanly
+
+### Quick Aliases
+
+After sourcing `.vibe/init`, you can use these shortcuts:
+
+- `vs` → `vibe-session`
+- `vl` → `vibe-list`
+- `va` → `vibe-attach`
+- `vlog` → `vibe-logs`
+- `vk` → `vibe-kill`
+
+## 💡 Common Use Cases
+
+### Development Server
 
 ```bash
-./setup.sh --local --template nodejs-react
+# Start a development server
+vibe-session dev . "npm run dev"
+
+# Monitor the output
+vibe-logs dev -f
+
+# Attach to interact
+vibe-attach dev
 ```
 
-## 🛠️ Manual Setup
+### Running Tests
 
-If you prefer to set up manually after cloning:
-
-**On Unix/Linux/macOS:**
 ```bash
-chmod +x setup.sh
-./setup.sh
+# Run tests with monitoring
+vibe-session test . "npm test"
+vibe-logs test -f
 ```
 
-**On Windows:**
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-.\setup.ps1
+### Parallel Tasks
+
+```bash
+# Run multiple builds concurrently
+vibe-session frontend . "npm run build:frontend"
+vibe-session backend . "npm run build:backend"
+
+# Check all statuses
+vibe-list -v
 ```
 
-## 🎨 Getting Started
+## 📁 Project Structure
 
-Once the setup is complete, you'll have a ready-to-use development environment optimized for Claude code assistance. Check out the generated project structure and start building!
-
-### What Gets Created
-
-The setup script creates the following structure:
 ```
 .vibe/
-├── PERSONA.md      # Defines Claude's role and expertise
-├── TASKS.md        # Project tasks and progress tracking
-├── ERRORS.md       # Error log for debugging
-├── ENVIRONMENT.md  # System and project context
-├── LOG.txt         # Development history
-├── LINKS.csv       # External documentation references
-└── docs/           # Additional project documentation
-
-CLAUDE.md           # Main guidance file for Claude
-.gitignore          # Pre-configured ignore patterns
-clean.sh            # Script to reset the project structure
+├── init              # Initialize vibe commands
+├── session           # Create new sessions
+├── list              # List sessions
+├── attach            # Attach to sessions
+├── logs              # View logs
+├── kill              # Terminate sessions
+├── instructions/     # Project documentation
+├── docs/             # Technical documentation
+├── logs/             # Session log files
+└── sessions/         # Session metadata
 ```
 
-## 📚 Documentation
+## 🔧 Advanced Usage
 
-- `CLAUDE.md` - Guidelines for effective Claude collaboration
-- Project-specific documentation will be generated during setup
+### Session Naming
 
-## 🤝 Contributing
+Use descriptive names for your sessions:
+- `dev-server`, `test-unit`, `build-prod`
+- Names must be alphanumeric with hyphens/underscores
 
-Feel free to contribute improvements to this starter template! Submit issues and pull requests to help make the Claude coding experience even better.
+### Log Management
+
+Logs are stored in `.vibe/logs/` with timestamps:
+```bash
+# View specific number of lines
+vibe-logs session-name -n 100
+
+# Follow logs in real-time
+vibe-logs session-name -f
+```
+
+### Session Lifecycle
+
+1. Create: `vibe-session name`
+2. Monitor: `vibe-logs name`
+3. Interact: `vibe-attach name`
+4. Terminate: `vibe-kill name`
+
+## 📖 Documentation
+
+- **User Guide**: This README
+- **Technical Details**: `.vibe/docs/vibe-cli-internal.md`
+- **Claude Integration**: `.vibe/instructions/CLAUDE.md`
+
+## 🤝 Working with Claude Code
+
+This project is optimized for use with Claude Code. The `.vibe` directory contains:
+- Instructions for Claude's behavior and approach
+- Task tracking and error management
+- Documentation and reference materials
+
+When working with Claude Code, all shell commands should be executed through the vibe system to ensure proper logging and tracking.
+
+## 🛠️ Troubleshooting
+
+### Session Won't Create
+Check if the name already exists: `vibe-list`
+
+### Can't See Logs
+Ensure the session was created with vibe-session
+
+### Session Shows as "Dead"
+The command finished or crashed. Check logs for details:
+```bash
+vibe-logs session-name -n 200
+```
 
 ## 📄 License
 

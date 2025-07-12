@@ -1,2 +1,0 @@
-[2025-07-12 15:39:40] Project initialized with Claude Code default template v1.0.0
-[2025-07-12 15:39:40] Created .vibe directory structure and configuration files

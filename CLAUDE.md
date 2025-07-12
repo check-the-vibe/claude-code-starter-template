@@ -9,27 +9,29 @@ This is a starter template for Claude Code projects. The template uses a structu
 ### Key Components
 
 The following files in the .vibe directory guide development:
-- **PERSONA.md**: Defines Claude's role and approach
-- **TASKS.md**: Tracks project tasks and progress
-- **ERRORS.md**: Logs and tracks errors for iterative improvement
-- **LINKS.csv**: External documentation and resources
-- **LOG.txt**: Development history and actions taken
-- **ENVIRONMENT.md**: System and project context
+- **instructions/PERSONA.md**: Defines Claude's role and approach
+- **instructions/TASKS.md**: Tracks project tasks and progress
+- **instructions/ERRORS.md**: Logs and tracks errors for iterative improvement
+- **docs/LINKS.csv**: External documentation and resources
+- **instructions/ENVIRONMENT.md**: System and project context
 - **docs/**: Additional project documentation
+  - **vibe-cli-internal.md**: Technical documentation for the vibe CLI system
 
 ### Vibe Session Management System
 
 The .vibe directory includes a tmux-based session management system for running shell commands:
-- **vibe-session**: Create and manage tmux sessions with automatic logging
-- **vibe-list**: List all active vibe sessions
-- **vibe-attach**: Attach to existing sessions
-- **vibe-logs**: View session logs (with follow mode)
-- **vibe-kill**: Terminate sessions
-- **vibe-init**: Initialize aliases for easy access
+- **session**: Create and manage tmux sessions with automatic logging
+- **list**: List all active vibe sessions
+- **attach**: Attach to existing sessions
+- **logs**: View session logs (with follow mode)
+- **kill**: Terminate sessions
+- **init**: Initialize aliases for easy access
 
 ## IMPORTANT: Shell Command Execution
 
 **ALL shell commands MUST be executed using the vibe session management system.** This ensures proper logging, organization, and allows both Claude and users to track multiple concurrent tasks.
+
+For detailed technical information about the vibe CLI system, including implementation details, design decisions, and advanced usage patterns, see `.vibe/docs/vibe-cli-internal.md`.
 
 ### Required Usage Pattern:
 1. Create a session: `vibe-session <name> [directory] [command]`
@@ -56,27 +58,25 @@ vibe-logs python-task
 ## Workflow Guidelines
 
 ### 1. Initial Setup
-- Source vibe commands: `source .vibe/vibe-init`
-- Read ENVIRONMENT.md to understand the execution context
-- Review PERSONA.md to assume the appropriate role
-- Check ERRORS.md for any previous issues
-- Examine TASKS.md for current objectives
+- Source vibe commands: `source .vibe/init`
+- Read instructions/ENVIRONMENT.md to understand the execution context
+- Review instructions/PERSONA.md to assume the appropriate role
+- Check instructions/ERRORS.md for any previous issues
+- Examine instructions/TASKS.md for current objectives
 
 ### 2. Task Execution
-- Log each action in LOG.txt before performing it
 - Break complex tasks into subtasks (max 5 steps)
-- Update task status in TASKS.md as you progress
+- Update task status in instructions/TASKS.md as you progress
 - Document findings in .vibe/docs/ as needed
 
 ### 3. Error Handling
-- Log errors in ERRORS.md with context
+- Log errors in instructions/ERRORS.md with context
 - Prioritize fixing errors before new tasks
-- Clear ERRORS.md after resolution
+- Clear instructions/ERRORS.md after resolution
 
 ### 4. Documentation
-- Add useful web resources to LINKS.csv
+- Add useful web resources to docs/LINKS.csv
 - Store relevant documentation in .vibe/docs/
-- Keep LOG.txt updated with concise summaries
 
 ### 5. Git Best Practices
 - Ensure .gitignore exists and is properly configured
@@ -89,7 +89,7 @@ vibe-logs python-task
 Common commands for this project (using vibe sessions):
 ```bash
 # Initialize vibe (run once per shell session)
-source .vibe/vibe-init
+source .vibe/init
 
 # NPM projects
 vibe-session install . "npm install"       # Install dependencies
@@ -115,7 +115,7 @@ vibe-list -v       # List with details
 vibe-attach <name> # Attach to session
 vibe-kill <name>   # Kill session
 
-# Short aliases (after sourcing vibe-init)
+# Short aliases (after sourcing init)
 vs  # vibe-session
 vl  # vibe-list
 va  # vibe-attach
@@ -141,6 +141,6 @@ git push
 
 1. Review all .vibe files to understand context
 2. Check for any pending tasks or errors
-3. Begin work according to TASKS.md
+3. Begin work according to instructions/TASKS.md
 4. Update progress regularly
 5. Commit changes when reaching logical stopping points

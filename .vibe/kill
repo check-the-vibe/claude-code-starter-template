@@ -39,7 +39,7 @@ if [[ -z "$SESSION_NAME" ]]; then
     echo "Usage: vibe-kill <session-name> [-f|--force]"
     echo ""
     echo "Available sessions:"
-    "$VIBE_DIR/vibe-list"
+    "$VIBE_DIR/list"
     exit 1
 fi
 
@@ -47,11 +47,20 @@ FULL_SESSION_NAME="vibe-$SESSION_NAME"
 
 # Check if session exists
 if ! tmux has-session -t "=$FULL_SESSION_NAME" 2>/dev/null; then
-    echo "Error: Session '$SESSION_NAME' does not exist"
-    echo ""
-    echo "Available sessions:"
-    "$VIBE_DIR/vibe-list"
-    exit 1
+    # Check if there's an orphaned info file
+    INFO_FILE="$SESSIONS_DIR/$SESSION_NAME.info"
+    if [[ -f "$INFO_FILE" ]]; then
+        echo "Session '$SESSION_NAME' is dead. Cleaning up orphaned info file..."
+        rm "$INFO_FILE"
+        echo "Cleanup complete."
+        exit 0
+    else
+        echo "Error: Session '$SESSION_NAME' does not exist"
+        echo ""
+        echo "Available sessions:"
+        "$VIBE_DIR/list"
+        exit 1
+    fi
 fi
 
 # Confirmation if not forced
