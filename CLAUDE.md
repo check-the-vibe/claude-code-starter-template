@@ -53,7 +53,30 @@ The .vibe directory includes a tmux-based session management system for running 
 
 **ALL shell commands MUST be executed using the vibe session management system.** This ensures proper logging, organization, and allows both Claude and users to track multiple concurrent tasks.
 
+**CRITICAL: NON-BLOCKING EXECUTION**
+- The `vibe-session` command returns IMMEDIATELY after creating a session
+- DO NOT wait for commands to complete - continue with your next task
+- Check session output asynchronously using `vibe-logs` or reading log files
+- This enables true multi-tasking and parallel execution
+
 For detailed technical information about the vibe CLI system, including implementation details, design decisions, and advanced usage patterns, see `.vibe/docs/vibe-cli-internal.md`.
+
+### Background Execution Pattern (REQUIRED):
+
+**IMPORTANT**: Commands run in the BACKGROUND. You must NOT wait for them to complete.
+
+```bash
+# CORRECT - Non-blocking pattern
+vibe-session build . "npm run build"  # Returns immediately
+vibe-session test . "npm test"         # Start next task right away
+sleep 2                                # Brief pause to let commands start
+.vibe/tail build -n 20                 # Check progress asynchronously
+.vibe/tail test -n 20                  # Check other session
+
+# INCORRECT - Blocking pattern (DO NOT DO THIS)
+vibe-session build . "npm run build"   # DO NOT wait here
+# Waiting for completion...           # WRONG - blocks multi-tasking
+```
 
 ### Required Development Pattern:
 
@@ -69,29 +92,151 @@ When starting any task that requires shell commands:
 3. **Execute all commands in that session**:
    ```bash
    vibe-session install-deps . "npm install"
+   # Command returns immediately - continue with next task
    ```
 
-4. **Monitor progress**: Use `tail` or read from `.vibe/logs/` directory:
+4. **Monitor progress ASYNCHRONOUSLY**: 
    ```bash
-   # Check output after commands
-   .vibe/tail install-deps
+   # After starting sessions, check their output
+   sleep 2  # Brief pause to let command start
+   .vibe/tail install-deps -n 50
    
-   # Or directly read the log file
-   cat .vibe/logs/install-deps-*.log
+   # Or check multiple sessions
+   for session in build test lint; do
+       echo "=== $session ==="
+       .vibe/tail $session -n 10
+   done
    ```
 
 5. **Continue based on output**: Read the session logs to determine next actions
 
-### Example Workflow:
+### Multi-Tasking Pattern:
+
+When handling multiple related tasks, work in parallel:
+
+1. **Identify Related Tasks**: Break down the work into parallel components
+   
+2. **Create Multiple Sessions Immediately**:
+   ```bash
+   # Start all related tasks without waiting
+   .vibe/session frontend-build . "npm install && npm run build:frontend"
+   .vibe/session backend-build . "npm install && npm run build:backend"
+   .vibe/session test-setup . "npm install && npm run test:setup"
+   ```
+
+3. **Important**: Do NOT wait after creating sessions - immediately create the next one
+   - The vibe-session command returns immediately after creating the session
+   - Commands run in the background in their tmux sessions
+   - This allows multiple tasks to execute simultaneously
+
+4. **Monitor All Sessions**:
+   ```bash
+   # Check status of all sessions
+   .vibe/list -v
+   
+   # Monitor specific sessions as needed
+   .vibe/tail frontend-build
+   .vibe/tail backend-build
+   ```
+
+5. **Iterate Through Results**:
+   ```bash
+   # Check each session's progress
+   for session in frontend-build backend-build test-setup; do
+       echo "=== Checking $session ==="
+       .vibe/tail $session -n 20
+   done
+   ```
+
+### Parallel Execution Example:
 ```bash
-# User asks to build and test a project
+# User asks to set up a full development environment
 source .vibe/init
-vibe-session build-test . "npm install && npm run build && npm test"
-# Wait a moment for execution
-sleep 2
-# Check the output
-.vibe/tail build-test
-# Based on results, take next action
+
+# Start all setup tasks in parallel
+echo "Starting parallel setup tasks..."
+.vibe/session install-deps . "npm install"
+.vibe/session setup-db . "docker-compose up -d db && npm run db:migrate"
+.vibe/session build-assets . "npm run build:css && npm run build:js"
+.vibe/session init-config . "cp .env.example .env && npm run config:generate"
+
+# List all active sessions
+echo "Active setup tasks:"
+.vibe/list
+
+# Wait a bit for initial progress
+sleep 3
+
+# Check each session's status
+for task in install-deps setup-db build-assets init-config; do
+    echo -e "\n=== Status of $task ==="
+    .vibe/tail $task -n 10
+done
+
+# Continue with next steps based on completion
+```
+
+### Best Practices for Multi-Tasking:
+
+1. **Non-Blocking Execution**: Never wait for a session to complete before starting the next
+2. **Descriptive Names**: Use clear session names that indicate the task
+3. **Grouped Monitoring**: Check related sessions together
+4. **Progressive Action**: Start with quick tasks while longer ones run
+5. **Resource Awareness**: Consider system resources when running many parallel tasks
+
+### Session Status Checking Patterns:
+
+**ALWAYS check status asynchronously - NEVER block waiting for completion**
+
+```bash
+# Pattern 1: Quick status check
+vibe-session long-task . "python train_model.py"
+# Continue immediately with other work
+echo "Started training model in background"
+# Later, check progress
+.vibe/tail long-task -n 20
+
+# Pattern 2: Periodic monitoring
+vibe-session data-process . "python process_large_file.py"
+# Do other tasks while it runs
+vibe-session quick-analysis . "python analyze.py"
+# Check both after a moment
+sleep 3
+for task in data-process quick-analysis; do
+    echo "=== $task status ==="
+    .vibe/tail $task -n 10
+done
+
+# Pattern 3: Log file monitoring
+vibe-session server . "npm start"
+# Get the log file path
+LOG_FILE=$(ls -t .vibe/logs/server-*.log | head -1)
+# Check it periodically
+tail -n 20 "$LOG_FILE"
+```
+
+### Example Multi-Task Scenarios:
+
+**Scenario 1: Full Stack Build**
+```bash
+.vibe/session frontend . "cd frontend && npm install && npm run build"
+.vibe/session backend . "cd backend && go build -o server"
+.vibe/session docker . "docker build -t myapp:latest ."
+```
+
+**Scenario 2: Testing Suite**
+```bash
+.vibe/session unit-tests . "npm run test:unit"
+.vibe/session integration-tests . "npm run test:integration"
+.vibe/session lint . "npm run lint"
+.vibe/session type-check . "npm run type-check"
+```
+
+**Scenario 3: Data Processing**
+```bash
+.vibe/session fetch-data . "python fetch_data.py"
+.vibe/session process-csv . "python process_csv.py input.csv"
+.vibe/session generate-report . "python generate_report.py"
 ```
 
 ### Examples:
