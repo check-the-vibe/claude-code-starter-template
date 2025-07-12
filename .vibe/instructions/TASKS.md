@@ -2,11 +2,34 @@
 
 ## Current Sprint
 
-Let's add the ability to handle environment variables inside of a running session. Ideally i should be able to pass an .env file, and within that session the environment variables should be exported and available. 
-
-Think through how you can accomplish this best, research the best way to use environment variables inside of a tmux session, including how to read them from a file like a .env file. 
+_No active tasks_
 
 ## Completed Tasks
+
+### Environment Variable Support (Completed: 2025-07-12)
+
+**Implementation Tasks:**
+- [x] Research tmux environment variable handling
+- [x] Design .env file integration approach  
+- [x] Implement env var support in session script with `-e` flag
+- [x] Test single and multiple env file loading
+- [x] Update documentation for env var feature
+
+**Features Added:**
+- Added `-e` or `--env-file` option to vibe-session command
+- Support for loading multiple env files (later files override earlier)
+- Automatic variable export using `set -a` mechanism
+- Validation of env file existence before session creation
+- Clear documentation and examples in README and CLAUDE.md
+
+### Script Updates (Completed: 2025-07-12)
+
+**Changes:**
+- [x] Renamed logs viewer script from `logs-viewer` to `tail`
+- [x] Updated all references in init script
+- [x] Updated CLAUDE.md with new development workflow pattern
+- [x] Fixed dead session cleanup in kill script
+- [x] Fixed script references (vibe-list → list) in multiple scripts
 
 ### Repository Structure Overhaul (Completed: 2025-07-12)
 

@@ -33,12 +33,44 @@ The .vibe directory includes a tmux-based session management system for running 
 
 For detailed technical information about the vibe CLI system, including implementation details, design decisions, and advanced usage patterns, see `.vibe/docs/vibe-cli-internal.md`.
 
-### Required Usage Pattern:
-1. Create a session: `vibe-session <name> [directory] [command]`
-2. Check session status: `vibe-list`
-3. View output: `vibe-logs <name>`
-4. Attach if needed: `vibe-attach <name>`
-5. Clean up: `vibe-kill <name>`
+### Required Development Pattern:
+
+When starting any task that requires shell commands:
+
+1. **Initialize vibe**: Always start with `source .vibe/init`
+
+2. **Create a named session**: When asked to execute commands or tasks:
+   - Create a descriptive session name (e.g., `build-frontend`, `test-api`, `debug-issue`)
+   - Inform the user of the session name
+   - Example: "I'll create a session called 'install-deps' to install the dependencies"
+
+3. **Execute all commands in that session**:
+   ```bash
+   vibe-session install-deps . "npm install"
+   ```
+
+4. **Monitor progress**: Use `tail` or read from `.vibe/logs/` directory:
+   ```bash
+   # Check output after commands
+   .vibe/tail install-deps
+   
+   # Or directly read the log file
+   cat .vibe/logs/install-deps-*.log
+   ```
+
+5. **Continue based on output**: Read the session logs to determine next actions
+
+### Example Workflow:
+```bash
+# User asks to build and test a project
+source .vibe/init
+vibe-session build-test . "npm install && npm run build && npm test"
+# Wait a moment for execution
+sleep 2
+# Check the output
+.vibe/tail build-test
+# Based on results, take next action
+```
 
 ### Examples:
 ```bash
@@ -103,6 +135,10 @@ vibe-session pip-install . "pip install -r requirements.txt"  # Install dependen
 vibe-session python-main . "python main.py"                   # Run main script
 vibe-session pytest . "pytest"                                # Run tests
 vibe-session format . "black ."                               # Format code
+
+# With environment variables
+vibe-session api-dev . "python app.py" -e .env.dev           # Load dev environment
+vibe-session db-migrate . "alembic upgrade head" -e .env     # Run migrations with env
 
 # View session output
 vibe-logs <session-name>      # View last 50 lines

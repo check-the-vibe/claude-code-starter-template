@@ -17,14 +17,14 @@ export VIBE_DIR
 alias vibe-session="$VIBE_DIR/session"
 alias vibe-list="$VIBE_DIR/list"
 alias vibe-attach="$VIBE_DIR/attach"
-alias vibe-logs="$VIBE_DIR/logs"
+alias vibe-logs="$VIBE_DIR/tail"
 alias vibe-kill="$VIBE_DIR/kill"
 
 # Create short aliases for convenience
 alias vs="$VIBE_DIR/session"
 alias vl="$VIBE_DIR/list"
 alias va="$VIBE_DIR/attach"
-alias vlog="$VIBE_DIR/logs"
+alias vlog="$VIBE_DIR/tail"
 alias vk="$VIBE_DIR/kill"
 
 # Main vibe command that provides help and acts as an entry point

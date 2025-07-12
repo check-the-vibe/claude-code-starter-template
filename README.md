@@ -39,7 +39,7 @@ Vibe is a session management system that wraps tmux to provide:
 
 - `vibe-session` - Create new tmux sessions with automatic logging
 - `vibe-list` - List all active sessions with their status
-- `vibe-logs` - View or follow session logs
+- `vibe-logs` - View or tail session logs (uses `.vibe/tail`)
 - `vibe-attach` - Attach to running sessions
 - `vibe-kill` - Terminate sessions cleanly
 
@@ -76,6 +76,20 @@ vibe-session test . "npm test"
 vibe-logs test -f
 ```
 
+### Environment Variables
+
+```bash
+# Load environment from .env file
+vibe-session api . "npm start" -e .env
+
+# Load multiple env files (later files override earlier ones)
+vibe-session prod . "./server" -e .env -e .env.prod
+
+# Check environment in session
+vibe-attach prod
+env | grep MY_VAR
+```
+
 ### Parallel Tasks
 
 ```bash
@@ -95,7 +109,7 @@ vibe-list -v
 ├── session           # Create new sessions
 ├── list              # List sessions
 ├── attach            # Attach to sessions
-├── logs              # View logs
+├── tail              # View/tail logs
 ├── kill              # Terminate sessions
 ├── instructions/     # Project documentation
 ├── docs/             # Technical documentation
