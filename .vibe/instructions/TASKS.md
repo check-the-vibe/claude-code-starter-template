@@ -1,10 +1,46 @@
 # Project Tasks
 
-## Current Sprint
+## Current Sprint - Multi-tasking
 
-_No active tasks_
+Update the CLAUDE.md file with instructions that enable Claude to do more than one task at once. When there are more than one task that are related to each other, claude should execute both commands first, in separate sessions, and then iterate through each task's session to complete, this should allow work to be going on behind the scenes in prep for the next action that is coming up. 
+
+In order to accomplish this, you will need to be sure that when claude is executing a command that it can immediately detach from the session and continue on with the multi-tasking it is looking to do. 
+
+think through how you are going to accomplish this, plot out the right course, test out your actions when you're done. 
 
 ## Completed Tasks
+
+### Anthropic Recommendations Implementation (Completed: 2025-07-12)
+
+**Research & Analysis:**
+- [x] Clone Anthropic prompt engineering tutorial repo
+- [x] Read through Anthropic 1P folder notebooks
+- [x] Extract key recommendations and best practices
+- [x] Create anthropic-recommendations.md with comprehensive list
+
+**CLAUDE.md Updates:**
+- [x] Add Core Principles section based on Anthropic best practices
+- [x] Emphasize being clear and direct in instructions
+- [x] Add XML tag usage guidelines for data/instruction separation
+- [x] Implement step-by-step thinking pattern for complex tasks
+- [x] Add role prompting section
+- [x] Add section on avoiding hallucinations
+- [x] Document the recommended complex prompt structure
+- [x] Include guidelines on output formatting with XML tags
+- [x] Add section on using few-shot examples effectively
+
+**Documentation Created:**
+- [x] Created .vibe/docs/prompt-patterns.md with example templates
+- [x] Added comprehensive examples of good prompting patterns
+- [x] Documented common XML tags and their usage
+- [x] Included examples for file analysis, code generation, debugging, refactoring, and documentation
+
+**Key Improvements:**
+- Clear separation of instructions and data using XML tags
+- Emphasis on explicit, direct communication
+- Step-by-step thinking for complex tasks
+- Role context for better responses
+- Structured approach to complex prompts
 
 ### Environment Variable Support (Completed: 2025-07-12)
 

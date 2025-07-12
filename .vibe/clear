@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# clear - Kill all vibe-managed tmux sessions
+# Usage: vibe-clear [-f|--force]
+
+VIBE_DIR="$(dirname "$0")"
+
+# Parse arguments
+FORCE=false
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f|--force)
+            FORCE=true
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: vibe-clear [-f|--force]"
+            echo ""
+            echo "Kill all active vibe sessions and clean up."
+            echo ""
+            echo "Options:"
+            echo "  -f, --force  Clear all sessions without confirmation"
+            echo ""
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use 'vibe-clear --help' for usage"
+            exit 1
+            ;;
+    esac
+done
+
+# Get all vibe sessions
+SESSIONS=$(tmux list-sessions 2>/dev/null | grep "^vibe-" | cut -d: -f1)
+
+if [[ -z "$SESSIONS" ]]; then
+    echo "No active vibe sessions found."
+    exit 0
+fi
+
+# Count sessions
+SESSION_COUNT=$(echo "$SESSIONS" | wc -l)
+
+# Show sessions that will be killed
+echo "Found $SESSION_COUNT active vibe session(s):"
+echo "$SESSIONS" | sed 's/^vibe-/  - /'
+echo ""
+
+# Confirmation if not forced
+if [[ "$FORCE" != true ]]; then
+    echo "This will terminate all vibe sessions and their running processes."
+    read -p "Are you sure you want to clear all sessions? (yes/no): " CONFIRM
+    if [[ "$CONFIRM" != "yes" ]]; then
+        echo "Cancelled."
+        exit 0
+    fi
+fi
+
+# Kill each session
+echo ""
+echo "Clearing sessions..."
+for SESSION in $SESSIONS; do
+    SESSION_NAME="${SESSION#vibe-}"
+    echo "  Killing session: $SESSION_NAME"
+    tmux kill-session -t "$SESSION" 2>/dev/null
+    
+    # Clean up info file
+    INFO_FILE="$VIBE_DIR/sessions/$SESSION_NAME.info"
+    if [[ -f "$INFO_FILE" ]]; then
+        rm "$INFO_FILE"
+    fi
+done
+
+echo ""
+echo "All vibe sessions have been cleared."
+
+# Optional: Show log files info
+LOG_COUNT=$(ls "$VIBE_DIR/logs" 2>/dev/null | wc -l)
+if [[ $LOG_COUNT -gt 0 ]]; then
+    echo ""
+    echo "Note: $LOG_COUNT log file(s) remain in $VIBE_DIR/logs/"
+    echo "These are preserved for your reference."
+fi

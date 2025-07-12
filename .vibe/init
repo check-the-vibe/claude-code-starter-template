@@ -19,6 +19,7 @@ alias vibe-list="$VIBE_DIR/list"
 alias vibe-attach="$VIBE_DIR/attach"
 alias vibe-logs="$VIBE_DIR/tail"
 alias vibe-kill="$VIBE_DIR/kill"
+alias vibe-clear="$VIBE_DIR/clear"
 
 # Create short aliases for convenience
 alias vs="$VIBE_DIR/session"
@@ -26,6 +27,7 @@ alias vl="$VIBE_DIR/list"
 alias va="$VIBE_DIR/attach"
 alias vlog="$VIBE_DIR/tail"
 alias vk="$VIBE_DIR/kill"
+alias vc="$VIBE_DIR/clear"
 
 # Main vibe command that provides help and acts as an entry point
 vibe() {
@@ -38,6 +40,7 @@ vibe() {
         echo "  vibe-attach <name>               Attach to a session"
         echo "  vibe-logs <name> [-n N] [-f]     View session logs"
         echo "  vibe-kill <name> [-f]            Kill a session"
+        echo "  vibe-clear [-f]                  Kill all sessions"
         echo ""
         echo "Short aliases:"
         echo "  vs    - vibe-session"
@@ -45,6 +48,7 @@ vibe() {
         echo "  va    - vibe-attach"
         echo "  vlog  - vibe-logs"
         echo "  vk    - vibe-kill"
+        echo "  vc    - vibe-clear"
         echo ""
         echo "Examples:"
         echo "  vs dev                      # Create 'dev' session"

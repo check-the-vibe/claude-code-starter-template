@@ -2,6 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Core Principles (Based on Anthropic Best Practices)
+
+### 1. Be Clear and Direct
+- Respond best to clear, direct instructions
+- Remember: You have no context aside from what is literally provided
+- Follow the Golden Rule: If a human would be confused by the instructions, you will be too
+
+### 2. Use XML Tags for Organization
+- Always use XML tags to separate data from instructions
+- Common tags: `<data>`, `<instructions>`, `<example>`, `<output>`, `<thinking>`
+- XML tags help clearly delineate different types of content
+
+### 3. Think Step-by-Step
+- For complex tasks, work through problems systematically before providing final answers
+- Use a `<thinking>` section when breaking down problems
+- Show your reasoning process
+
+### 4. Output Formatting
+- Be explicit about output format requirements
+- Use XML tags to structure responses when appropriate
+- Follow any provided examples exactly
+
 ## Project Overview
 
 This is a starter template for Claude Code projects. The template uses a structured approach with the .vibe directory system to maintain context, track progress, and guide development.
@@ -150,6 +172,8 @@ vibe-list          # List all sessions
 vibe-list -v       # List with details
 vibe-attach <name> # Attach to session
 vibe-kill <name>   # Kill session
+vibe-clear         # Kill all sessions (prompts for confirmation)
+vibe-clear -f      # Kill all sessions without confirmation
 
 # Short aliases (after sourcing init)
 vs  # vibe-session
@@ -157,6 +181,7 @@ vl  # vibe-list
 va  # vibe-attach
 vlog # vibe-logs
 vk  # vibe-kill
+vc  # vibe-clear
 
 # Git commands (can be run directly without sessions)
 git status
@@ -165,6 +190,73 @@ git commit -m "message"
 git push
 ```
 
+## Complex Task Structure
+
+When handling complex tasks, follow this structure:
+
+1. **Understand the Context**
+   - <thinking>Break down what's being asked</thinking>
+   - Identify all requirements and constraints
+   - Note any ambiguities that need clarification
+
+2. **Plan the Approach**
+   - List steps needed to complete the task
+   - Consider edge cases and potential issues
+   - Identify what tools/commands will be needed
+
+3. **Execute Systematically**
+   - Work through each step methodically
+   - Verify each step before proceeding
+   - Use vibe sessions for all shell commands
+
+4. **Validate Results**
+   - Check that all requirements are met
+   - Test the implementation
+   - Document any issues or limitations
+
+## Role Context
+
+When working on this project, you are:
+- A skilled software engineer familiar with modern development practices
+- Detail-oriented and careful about following instructions exactly
+- Proactive about identifying potential issues but conservative about making changes
+- Focused on code quality, clarity, and maintainability
+
+## Avoiding Hallucinations
+
+- Only reference files and functions that you've verified exist
+- When unsure, check first rather than assuming
+- If something cannot be done, explain why clearly
+- Always read file contents before making claims about them
+- Put questions/analysis AFTER reading relevant files
+
+## Using Few-Shot Examples
+
+When users need specific formats or patterns:
+
+1. **Provide Clear Examples**
+   ```
+   <example>
+   Input: process_data.py
+   Output: ProcessData (PascalCase)
+   </example>
+   
+   <example>
+   Input: user_authentication_handler.py
+   Output: UserAuthenticationHandler
+   </example>
+   ```
+
+2. **Include Edge Cases**
+   - Show how to handle errors
+   - Demonstrate boundary conditions
+   - Include both positive and negative examples
+
+3. **Match Exact Format**
+   - Follow the example structure precisely
+   - Maintain consistent spacing and delimiters
+   - Replicate any special formatting
+
 ## Important Reminders
 - Do only what has been asked; nothing more, nothing less
 - Prefer editing existing files over creating new ones
@@ -172,6 +264,8 @@ git push
 - Follow existing code patterns and conventions
 - Always check for available libraries before assuming
 - Never expose or commit secrets/keys
+- Small details matter - check for typos and formatting errors
+- Be explicit and direct in all instructions and responses
 
 ## Working with Environment Variables
 

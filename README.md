@@ -42,6 +42,7 @@ Vibe is a session management system that wraps tmux to provide:
 - `vibe-logs` - View or tail session logs (uses `.vibe/tail`)
 - `vibe-attach` - Attach to running sessions
 - `vibe-kill` - Terminate sessions cleanly
+- `vibe-clear` - Kill all active sessions at once
 
 ### Quick Aliases
 
@@ -52,6 +53,7 @@ After sourcing `.vibe/init`, you can use these shortcuts:
 - `va` → `vibe-attach`
 - `vlog` → `vibe-logs`
 - `vk` → `vibe-kill`
+- `vc` → `vibe-clear`
 
 ## 💡 Common Use Cases
 
@@ -111,6 +113,7 @@ vibe-list -v
 ├── attach            # Attach to sessions
 ├── tail              # View/tail logs
 ├── kill              # Terminate sessions
+├── clear             # Kill all sessions
 ├── instructions/     # Project documentation
 ├── docs/             # Technical documentation
 ├── logs/             # Session log files
@@ -142,6 +145,7 @@ vibe-logs session-name -f
 2. Monitor: `vibe-logs name`
 3. Interact: `vibe-attach name`
 4. Terminate: `vibe-kill name`
+5. Clear all: `vibe-clear` (when starting fresh)
 
 ## 📖 Documentation
 
